@@ -18,29 +18,31 @@ class DistanceSensitiveBloomFilter:
 
 	#hash element with k different hash functions, flip bit number [k, hash_functions[k](element)]
 	def add_element(self, element):
-		pass
+		for i in range(self.k):
+			hash_value = self.hash_functions[i](element)
+			self.bit_array[hash_value][i] = 1
+
 
 class LocalitySensitiveHash:
-	def __init__(self, indices_of_bits_to_sample):
+	def __init__(self, indices_of_bits_to_sample, max_output, a, b, p):
 		self.indices_of_bits_to_sample = indices_of_bits_to_sample
+		self.max_output = max_output
+		self.a = a
+		self.b = b
+		self.p = p
 
 	def hash(self, element):
-		return [element[i] for i in indices_of_bits_to_sample]
+		sampled_bits = [element[i] for i in self.indices_of_bits_to_sample]
+		integer_value = self.lsh_to_integer(sampled_bits)
+		hash_value = self.hash_integer(integer_value)
+		return hash_value
 
-
-def lsh_to_decimal(lsh):
-	powers = [2 ** i for i in range(len(lsh))][::-1]
-	return sum([x*powers[i] for i,x in enumerate(lsh)])
-
-def lsh_to_index(lsh):
-	max_range = (2 ** len(lsh)) - 1  
-	hash_func = hash_integer(1,1,2, max_range)
-	return hash_func(lsh_to_decimal(lsh))
+	def lsh_to_integer(self, lsh):
+		powers = [2 ** i for i in range(len(lsh))][::-1]
+		return sum([x*powers[i] for i,x in enumerate(lsh)])
+	
+	def hash_integer(self, x):
+		return ((self.a * x + self.b) % self.p) % self.max_output
 
 def calculate_hamming_distance(element, other_element):
-	pass
-
-def hash_integer(a, b, p, int_range):
-	def foo(x):
-		return (((a * x + b) % p) % int_range) 
-	return foo
+	return sum([abs(pair[0]-pair[1]) for pair in zip(element, other_element)])
