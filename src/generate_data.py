@@ -1,0 +1,1 @@
+#TODO generate random bitvectors (args: how long, how many) and pipe them to std::out
