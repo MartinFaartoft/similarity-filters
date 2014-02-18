@@ -1,3 +1,4 @@
+import random 
 class DistanceSensitiveBloomFilter:
 	
 	#k = number of hash functions to use
@@ -6,7 +7,10 @@ class DistanceSensitiveBloomFilter:
 		self.k = k
 		self.m = m
 		self.hash_functions = self.prepare_hash_functions(k, m) #make k of these
-		self.bit_array = [[0] * m] * k	 #k 'rows' of length m, indexed as self.bit_array[k][m]
+		self.bit_array = [] 
+		for i in range(k):
+			self.bit_array.append([0] * m) 
+			
 
 	def prepare_hash_functions(self, k, m):
 		hash_functions = []
@@ -61,3 +65,24 @@ class LocalitySensitiveHash:
 
 def calculate_hamming_distance(element, other_element):
 	return sum([abs(pair[0]-pair[1]) for pair in zip(element, other_element)])
+
+
+randBinList = lambda n: [random.randint(0,1) for b in range(1,n+1)]
+
+
+a = DistanceSensitiveBloomFilter(5,10)
+
+#print a.bit_array
+elem = randBinList(15)
+
+a.add_element(elem)
+a.add_element(randBinList(15))
+a.add_element(randBinList(15))
+a.add_element(randBinList(15))
+a.add_element(randBinList(15))
+a.add_element(randBinList(15))
+a.add_element(randBinList(15))
+a.add_element(randBinList(15))
+
+
+print a.count_number_of_true_values(elem)
