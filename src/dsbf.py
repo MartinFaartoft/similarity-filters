@@ -25,7 +25,23 @@ class LocalitySensitiveHash:
 		self.indices_of_bits_to_sample = indices_of_bits_to_sample
 
 	def hash(self, element):
-		pass
+		return [element[i] for i in indices_of_bits_to_sample]
+
+
+def lsh_to_decimal(lsh):
+	powers = [i**2 for i in len(lsh)][::-1]
+	return sum([x*powers[x] for x in lsh])
+
+def lsh_to_index(lsh):
+	max_range = (2 ** len(lsh)) - 1  
+	hash_func = hash_integer(1,1,2, max_range)
+	
+	return hash_func(lsh_to_decimal(lsh))
 
 def calculate_hamming_distance(element, other_element):
 	pass
+
+def hash_integer(a, b, p, int_range):
+	def foo(x):
+		return (((a * x + b) % p) % max(int_range)) / max(int_range)
+	return foo
