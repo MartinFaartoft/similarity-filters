@@ -1,6 +1,3 @@
-#TODO 
-# read data
-
 class DistanceSensitiveBloomFilter:
 	
 	#k = number of hash functions to use
@@ -8,19 +5,37 @@ class DistanceSensitiveBloomFilter:
 	def __init__(self, k, m):
 		self.k = k
 		self.m = m
-		self.hash_functions = [] #make k of these
-		self.bit_array = [[0] * m] * k	 #k 'rows' of length m
+		self.hash_functions = self.prepare_hash_functions(k, m) #make k of these
+		self.bit_array = [[0] * m] * k	 #k 'rows' of length m, indexed as self.bit_array[k][m]
+
+	def prepare_hash_functions(self, k, m):
+		hash_functions = []
+		for i in range(k):
+			p = 2147483659 #next after 2^31-1
+			a = random.randint(1, p)
+			b = random.randint(1, p)
+			bits = random.sample(range(m), 5) #TODO replace 5 with the number of bits to sample
+			lsh = LocalitySensitiveHash(bits, m, a, b, p)
+			hash_functions.append(lsh)
+
+		return hash_functions
 
 	#counts number of 'turned on' bits in the filter, looking only at positions
 	#that 'element' hashes to
 	def count_number_of_true_values(self, element):
-		pass
+		number_of_trues = 0
+		for i in range(self.k):
+			hash_value = self.hash_functions[i].hash(element)
+			if self.bit_array[i][hash_value] == 1:
+				number_of_trues += 1
+
+		return number_of_trues
 
 	#hash element with k different hash functions, flip bit number [k, hash_functions[k](element)]
 	def add_element(self, element):
 		for i in range(self.k):
-			hash_value = self.hash_functions[i](element)
-			self.bit_array[hash_value][i] = 1
+			hash_value = self.hash_functions[i].hash(element)
+			self.bit_array[i][hash_value] = 1
 
 
 class LocalitySensitiveHash:
