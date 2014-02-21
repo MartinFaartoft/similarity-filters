@@ -1,4 +1,5 @@
-# TODO generate random bitvectors (args: how long, how many) and pipe them to std::out
+# TODO generate random bitvectors (args: how long, how many)
+# and pipe them to std::out
 
 from sys import argv
 import random
