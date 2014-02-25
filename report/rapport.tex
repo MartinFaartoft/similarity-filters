@@ -81,11 +81,27 @@
 
 \section{Introduction}
 
-\section{Related work}
+\section{Related work} % Ideer fra related works
 \subsection{Harvard}
+Kirsch and Mitzenmacher proposes in \cite{paper:harvard} a distance sensitive way of using bloom filters. This allows questions of the sort "Is there anything in the set close to this element?", rather than just for strict membership. They note that such a way to utilize bloom filters could be applied to employee databases, where it may be sufficient to find out if there is an employee that fulfills a subset of the mentioned requirements. The disadvantage of using this approach compared to a classical bloom filter is that the possibility of false negatives is introduced.
+
+The way they accomplish this is by using locality sensitive hashing algorithms, such that elements that are close will also hash to values close together, or, if close enough, hash to the same value. They also use a partitioned bloom filter, which is a like a standard bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
+
+When querying the bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the indexes are checked. If there is more bits, than a specified threshold, that is set to 1, it returns that the data contains an element that is close to the tested element. The use of a threshold is also the reason why it is possible to have false positives using this data structure.
+
+% Hvordan adskiller det sig fra normal bloom filters, hvor du har et threshold, t
+
+%valg af T, k, m', n', n
+  %pulje af hashfunktioner (seed til random generator)
+  %beregn true/false positives og true/false negatives
+%find epsilon og sigma fra ovenstående
+%diskutér false positives (sandsynlighed)
+%diskutér false negatives (kan de elimineres?)
+%tegn nogle grafer
 \subsection{Kinesere}
 
-\section{Theory}
+\section{Theory} %
+
 \section{Experiments}
 
 \section{Conclusion}
@@ -94,9 +110,9 @@
 
 \begin{thebibliography}{}
 
-\bibitem{paper:amossen}
-Rasmus Resen Amossen, Andrea Campagna, Rasmus Pagh
-Better Size Estimation for Sparse Matrix Products. Algorithmica, March 2013.
+\bibitem{paper:harvard}
+Adam Kirsch, Michael Mitzenmacher
+Distance-Sensitive Bloom Filters
 
 \bibitem{paper:bar-yos}
 Z. Bar-Yossef, T. S. Jayram, R. Kumar, D. Sivakumar, and L. Trevisan.
