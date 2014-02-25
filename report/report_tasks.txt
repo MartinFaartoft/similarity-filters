@@ -1,0 +1,9 @@
+skriv tekst efter experiment plots
+	valg af k
+	sammenhæng mellem k og sigma
+	eksperimentel validering af sammenhængen
+
+estimaterne går i fløjten hvis k er for stor
+sigma blir stor, hvis k er for lille
+
+bibtex
