@@ -1,0 +1,132 @@
+% Author: Till Tantau
+% Source: The PGF/TikZ manual
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{amsmath}    % need for subequations
+\usepackage{graphicx}   % need for figures
+\usepackage{verbatim}   % useful for program listings
+\usepackage{color}      % use if color is used in text
+%\usepackage{subfigure}  % use for side-by-side figures
+\usepackage{hyperref}   % use for hypertext links, including those to external documents and URLs
+\usepackage{url}
+\usepackage{float}
+\usepackage{todonotes}
+\usepackage{tikz}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{pdfpages}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{amsfonts}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc} % use for allowing < and > in cleartext
+\usepackage{fixltx2e}    % use for textsubscript
+\usepackage[linesnumbered,boxed,ruled]{algorithm2e}
+% \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
+\newcommand{\BigO}[1]{\ensuremath{\mathop{}\mathopen{}\mathcal{O}\mathopen{}\left(#1\right)}}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+\lstset{ %
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  %frame=single,                    % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=Octave,                 % the language of the code
+  morekeywords={*,...},            % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+  tabsize=2,                       % sets default tabsize to 2 spaces
+  %title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+\bibliographystyle{plain}
+\begin{document}
+\date{16. December 2013}
+\title{Finding Hollywood's most Popular\\Using Map-Reduce and Approximation}
+
+\author{Marcus Gregersen\\
+\texttt{mabg@itu.dk} 
+\and Martin Faartoft\\
+\texttt{mlfa@itu.dk}
+\and Rick Marker\\
+\texttt{rdam@itu.dk}}
+%TODO vejleder og institut
+\clearpage\maketitle
+\thispagestyle{empty}
+\newpage
+\setcounter{page}{1}
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}
+
+\section{Related work} % Ideer fra related works
+\subsection{Harvard}
+Kirsch and Mitzenmacher proposes in \cite{paper:harvard} a distance sensitive way of using bloom filters. This allows questions of the sort "Is there anything in the set close to this element?", rather than just for strict membership. They note that such a way to utilize bloom filters could be applied to employee databases, where it may be sufficient to find out if there is an employee that fulfills a subset of the mentioned requirements. The disadvantage of using this approach compared to a classical bloom filter is that the possibility of false negatives is introduced.
+
+The way they accomplish this is by using locality sensitive hashing algorithms, such that elements that are close will also hash to values close together, or, if close enough, hash to the same value. They also use a partitioned bloom filter, which is a like a standard bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
+
+When querying the bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the indexes are checked. If there is more bits, than a specified threshold, that is set to 1, it returns that the data contains an element that is close to the tested element. The use of a threshold is also the reason why it is possible to have false positives using this data structure.
+
+% Hvordan adskiller det sig fra normal bloom filters, hvor du har et threshold, t
+
+%valg af T, k, m', n', n
+  %pulje af hashfunktioner (seed til random generator)
+  %beregn true/false positives og true/false negatives
+%find epsilon og sigma fra ovenstående
+%diskutér false positives (sandsynlighed)
+%diskutér false negatives (kan de elimineres?)
+%tegn nogle grafer
+\subsection{Kinesere}
+
+\section{Theory} %
+
+\section{Experiments}
+
+\section{Conclusion}
+ 
+\newpage
+
+\begin{thebibliography}{}
+
+\bibitem{paper:harvard}
+Adam Kirsch, Michael Mitzenmacher
+Distance-Sensitive Bloom Filters
+
+\bibitem{paper:bar-yos}
+Z. Bar-Yossef, T. S. Jayram, R. Kumar, D. Sivakumar, and L. Trevisan.
+Counting distinct elements in a data stream. Springer-Verlag, 2002. (RANDOM '02)
+
+      %Sådan her ref'er man en URL
+      %\bibitem{lit:json}
+      %\url{http://tools.ietf.org/html/rfc4627}
+      %Retrieved: 2013-05-02
+\end{thebibliography}
+
+%code in appendix
+\section*{Appendix}
+%\lstinputlisting[language=Python]{../tools/size_estimator.py}
+
+
+\end{document}
