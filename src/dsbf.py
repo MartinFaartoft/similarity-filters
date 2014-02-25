@@ -1,16 +1,16 @@
-import random 
+import random
 class DistanceSensitiveBloomFilter:
-	
+
 	#k = number of hash functions to use
 	#m = length of each subarray/partition (equal to max output value from each hash function)
 	def __init__(self, k, m):
 		self.k = k
 		self.m = m
 		self.hash_functions = self.prepare_hash_functions(k, m) #make k of these
-		self.bit_array = [] 
+		self.bit_array = []
 		for i in range(k):
-			self.bit_array.append([0] * m) 
-			
+			self.bit_array.append([0] * m)
+
 
 	def prepare_hash_functions(self, k, m):
 		hash_functions = []
@@ -59,7 +59,7 @@ class LocalitySensitiveHash:
 	def lsh_to_integer(self, lsh):
 		powers = [2 ** i for i in range(len(lsh))][::-1]
 		return sum([x*powers[i] for i,x in enumerate(lsh)])
-	
+
 	def hash_integer(self, x):
 		return ((self.a * x + self.b) % self.p) % self.max_output
 
