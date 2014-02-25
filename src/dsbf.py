@@ -3,9 +3,12 @@ class DistanceSensitiveBloomFilter:
 
 	#k = number of hash functions to use
 	#m = length of each subarray/partition (equal to max output value from each hash function)
-	def __init__(self, k, m):
+	def __init__(self, k, m, bits_to_sample, prime, seed):
 		self.k = k
 		self.m = m
+		self.bits_to_sample = bits_to_sample
+		self.seed = seed
+		self.prime = prime
 		self.hash_functions = self.prepare_hash_functions(k, m) #make k of these
 		self.bit_array = []
 		for i in range(k):
@@ -15,11 +18,11 @@ class DistanceSensitiveBloomFilter:
 	def prepare_hash_functions(self, k, m):
 		hash_functions = []
 		for i in range(k):
-			p = 2147483659 #next after 2^31-1
-			a = random.randint(1, p)
-			b = random.randint(1, p)
-			bits = random.sample(range(m), 5) #TODO replace 5 with the number of bits to sample
-			lsh = LocalitySensitiveHash(bits, m, a, b, p)
+			random.seed(self.seed)
+			a = random.randint(1, self.prime)
+			b = random.randint(1, self.prime)
+			bits = random.sample(range(m), self.bits_to_sample)
+			lsh = LocalitySensitiveHash(bits, m, a, b, self.prime)
 			hash_functions.append(lsh)
 
 		return hash_functions
@@ -70,7 +73,7 @@ def calculate_hamming_distance(element, other_element):
 randBinList = lambda n: [random.randint(0,1) for b in range(1,n+1)]
 
 
-a = DistanceSensitiveBloomFilter(5,10)
+a = DistanceSensitiveBloomFilter(5,10, 5, 2147483659, 2)
 
 #print a.bit_array
 elem = randBinList(15)
