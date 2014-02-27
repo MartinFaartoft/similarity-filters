@@ -34,3 +34,10 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+#tex
+.synctex.gz
+.out
+.log
+.aux
+.fdb_latexmk
