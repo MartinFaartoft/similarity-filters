@@ -107,6 +107,17 @@ A disadvantage to this approach, compared to a classical Bloom filter, is that i
 %diskutér false negatives (kan de elimineres?)
 %tegn nogle grafer
 \subsection{Kinesere}
+The paper written by [TODO] takes a different approach than [TODO ref mitz]. They use a standard Bloom Filter data structure, but with LSH in place of ordinary hash functions - they call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both False Positives and False Negatives, so they augment this with additional data structures.
+
+Minimizing False Positives:
+Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things.
+1) An element $p$ is in the LSBF, that is approximately close to $q$ (a true positive)
+2) Multiple elements in the LSBF, together, have set the bits to $1$, and no single element is approximately close to $q$. (a false positive).
+
+To minimize the probability of a FP, a Verification Scheme Bloom Filter is maintained as follows: Every time an element is added to the LSBF, the bit positions that are set to $1$ by that element, are encoded and added to a separate, standard Bloom Filter (the Verification Scheme). Now when the LSBF would answer 'yes' to an AMQ [TODO define], the Verification Scheme is queried to check if all the $1$ bits in th LSBF was due to any single element. If the Verification Scheme answer 'no', then a FP is detected in the LSBF, and 'no' is answered to the AMQ. However, the Verification Scheme is also prone to FP, since this a property of Bloom Filters, so this approach only servers to reduce the probability of FP, not eliminate them.
+
+Minimizing False Negatives:
+They use something called Active Overflowed Scheme, that I don't fully understand yet.
 
 \section{Theory} %
 
