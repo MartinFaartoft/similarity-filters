@@ -3,19 +3,18 @@ import random
 
 randBinList = lambda n: [random.randint(0, 1) for b in range(1, n+1)]
 
-k = 10
-m = 100
-bits_to_sample = 5
+k = 5
+m = 5
+bits_to_sample = 2
 prime_100 = 2147483659
 seed = 9859028509821
-threshold = 7
+threshold = 4
 
-
-length = m
+length = 10
 
 number_of_elements = 10
-number_of_candidates = 10
-closeness = threshold -1
+number_of_candidates = 100
+closeness = 0
 
 own_seed = 8585
 
@@ -42,11 +41,13 @@ def generate_close_candidates(candidate, close, number_of_candidates):
 def populate_dsbf(dsbf, n, length):
     #TODO: Insert static random data
     for i in range(n):
-        dsbf.add_element(randBinList(length))
+        element = randBinList(length)
+        dsbf.add_element(element)
+        print dsbf.bit_array
 
 
 def run():
-    dsbf = DistanceSensitiveBloomFilter(k, m, bits_to_sample, prime_100, seed, threshold)
+    dsbf = DistanceSensitiveBloomFilter(k, m, bits_to_sample, prime_100, seed, threshold, length)
     populate_dsbf(dsbf, number_of_elements, length)
     candidate = randBinList(length)
     count_true = 0

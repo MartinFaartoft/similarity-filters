@@ -3,12 +3,13 @@ class DistanceSensitiveBloomFilter:
 
 	#k = number of hash functions to use
 	#m = length of each subarray/partition (equal to max output value from each hash function)
-	def __init__(self, k, m, bits_to_sample, prime, seed, threshold):
+	def __init__(self, k, m, bits_to_sample, prime, seed, threshold, length):
 		self.k = k
 		self.m = m
 		self.bits_to_sample = bits_to_sample
 		self.seed = seed
 		self.prime = prime
+		self.length = length
 		self.hash_functions = self.prepare_hash_functions(k, m) #make k of these
 		self.bit_array = []
 		self.threshold = threshold
@@ -22,7 +23,7 @@ class DistanceSensitiveBloomFilter:
 			random.seed(self.seed)
 			a = random.randint(1, self.prime)
 			b = random.randint(1, self.prime)
-			bits = random.sample(range(m), self.bits_to_sample)
+			bits = random.sample(range(self.length), self.bits_to_sample)
 			lsh = LocalitySensitiveHash(bits, m, a, b, self.prime)
 			hash_functions.append(lsh)
 
@@ -36,7 +37,6 @@ class DistanceSensitiveBloomFilter:
 			hash_value = self.hash_functions[i].hash(element)
 			if self.bit_array[i][hash_value] == 1:
 				number_of_trues += 1
-
 		return number_of_trues
 
 	#hash element with k different hash functions, flip bit number [k, hash_functions[k](element)]
@@ -57,8 +57,6 @@ class LocalitySensitiveHash:
 		self.p = p
 
 	def hash(self, element):
-		print self.indices_of_bits_to_sample
-		print element
 		sampled_bits = [element[i] for i in self.indices_of_bits_to_sample]
 		integer_value = self.lsh_to_integer(sampled_bits)
 		hash_value = self.hash_integer(integer_value)
