@@ -114,10 +114,10 @@ Every time an element $q$ is checked for approximate membership, the LSBF is che
 1) An element $p$ is in the LSBF, that is approximately close to $q$ (a true positive)
 2) Multiple elements in the LSBF, together, have set the bits to $1$, and no single element is approximately close to $q$. (a false positive).
 
-To minimize the probability of a FP, a Verification Scheme Bloom Filter is maintained as follows: Every time an element is added to the LSBF, the bit positions that are set to $1$ by that element, are encoded and added to a separate, standard Bloom Filter (the Verification Scheme). Now when the LSBF would answer 'yes' to an AMQ [TODO define], the Verification Scheme is queried to check if all the $1$ bits in th LSBF was due to any single element. If the Verification Scheme answer 'no', then a FP is detected in the LSBF, and 'no' is answered to the AMQ. However, the Verification Scheme is also prone to FP, since this a property of Bloom Filters, so this approach only servers to reduce the probability of FP, not eliminate them.
+To minimize the probability of a FP, a Verification Scheme Bloom Filter is maintained as follows: Every time an element is added to the LSBF, the bit positions that are set to $1$ by that element, are encoded and added to a separate, standard Bloom Filter (the Verification Scheme). Now when the LSBF would answer 'yes' to an AMQ [TODO define], the Verification Scheme is queried to check if all the $1$ bits in the LSBF was due to any single element. If the Verification Scheme answer 'no', then a FP is detected in the LSBF, and 'no' is answered to the AMQ. However, the Verification Scheme is also prone to FP, since this a property of Bloom Filters, so this approach only servers to reduce the probability of FP, not eliminate them.
 
 Minimizing False Negatives:
-They use something called Active Overflowed Scheme, that I don't fully understand yet.
+They use a method called Active Overflowed Scheme, which utilizes the property of the locality sensitive hashing algorithms that proximate elements will be stored close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
 
 \section{Theory} %
 
