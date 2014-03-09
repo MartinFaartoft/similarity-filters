@@ -72,24 +72,24 @@ class LocalitySensitiveHash:
 def calculate_hamming_distance(element, other_element):
 	return sum([abs(pair[0]-pair[1]) for pair in zip(element, other_element)])
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-	randBinList = lambda n: [random.randint(0,1) for b in range(1,n+1)]
-
-
-	a = DistanceSensitiveBloomFilter(5,10, 5, 2147483659, 2)
-
-	#print a.bit_array
-	elem = randBinList(15)
-
-	a.add_element(elem)
-	a.add_element(randBinList(15))
-	a.add_element(randBinList(15))
-	a.add_element(randBinList(15))
-	a.add_element(randBinList(15))
-	a.add_element(randBinList(15))
-	a.add_element(randBinList(15))
-	a.add_element(randBinList(15))
+# 	randBinList = lambda n: [random.randint(0,1) for b in range(1,n+1)]
 
 
-	print a.count_number_of_true_values(elem)
+# 	a = DistanceSensitiveBloomFilter(5,10, 5, 2147483659, 2)
+
+# 	#print a.bit_array
+# 	elem = randBinList(15)
+
+# 	a.add_element(elem)
+# 	a.add_element(randBinList(15))
+# 	a.add_element(randBinList(15))
+# 	a.add_element(randBinList(15))
+# 	a.add_element(randBinList(15))
+# 	a.add_element(randBinList(15))
+# 	a.add_element(randBinList(15))
+# 	a.add_element(randBinList(15))
+
+
+# 	print a.count_number_of_true_values(elem)

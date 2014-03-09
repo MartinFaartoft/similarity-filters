@@ -5,17 +5,17 @@ import math
 randBinList = lambda n: [random.randint(0, 1) for b in range(1, n+1)]
 
 prime_100 = 2147483659
-seed = 9859028509821
-length = 6400
-number_of_elements = 10000
-number_of_candidates = 1000
-own_seed = 8585
+
+seed = random.randint(0, 100000)
+length = 65536
+number_of_elements = 1000
+number_of_candidates = 2000
 #Harvard pp. 44
 # c = Number of characters in the "alphabet"
 c = 1
 epsilon = 0.1
 delta = 0.4
-k = 10
+k = 5
 
 n = number_of_elements
 
@@ -28,19 +28,11 @@ m_prime = 2 ** l_prime
 threshold = (k * ((1 - c * epsilon) ** l_prime)) / 2
 
 closeness = int(math.floor(length * epsilon))
+farness = int(math.floor(length * delta))
 
-print "values", l_prime, m_prime, threshold, closeness
 
-## Legeland
-# k = 20
-# length = 65536
-# l_prime = 2
-# m_prime = 2000
-# threshold = 6
-# closeness = 650
-
-#Legeland end
-
+print "seed: " + str(seed)
+print "l_prime:", l_prime, "m_prime:", m_prime, "T:", threshold, closeness
 
 
 
@@ -53,15 +45,13 @@ def generate_close_candidates(candidate, close, number_of_candidates):
     for i in range(close):
         zeroes[i] = 1
 
-
     for i in range(number_of_candidates):
         random.shuffle(zeroes)
         copy = list(candidate)
         for u in range(len(zeroes)):
             if zeroes[u] == 1:
-                copy[u] = 0 if copy[u] == 1 else 0
+                copy[u] = 0 if copy[u] == 1 else 1
         yield copy
-
 
 
 def populate_dsbf(dsbf, n, length):
@@ -73,16 +63,31 @@ def populate_dsbf(dsbf, n, length):
 
 def run():
     dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, length)
-    populate_dsbf(dsbf, number_of_elements, length)
     candidate = randBinList(length)
+    dsbf.add_element(candidate)
+    populate_dsbf(dsbf, number_of_elements - 1, length)
+    #print 'after populate'
     count_true = 0
     for close_element in generate_close_candidates(candidate, closeness, number_of_candidates):
-        print dsbf.count_number_of_true_values(close_element)
+        #print dsbf.count_number_of_true_values(close_element)
         if dsbf.is_close(close_element):
             count_true += 1
-    return count_true
+
+    print "positives: " + str(count_true)
+    print "false negatives: " + str((number_of_candidates - count_true) / float(number_of_candidates))
+
+    count_true = 0
+    for far_element in generate_close_candidates(candidate, farness, number_of_candidates):
+        if dsbf.is_close(far_element):
+            count_true += 1
+
+    print "negatives: " + str(number_of_candidates - count_true)
+    print "false positives: " + str((count_true) / float(number_of_candidates))
 
 
-print run()
+
+
+
+run()
 
 #def __init__(self, k, m, bits_to_sample, prime, seed):
