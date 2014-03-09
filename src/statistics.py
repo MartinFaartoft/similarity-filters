@@ -6,9 +6,9 @@ randBinList = lambda n: [random.randint(0, 1) for b in range(1, n+1)]
 
 prime_100 = 2147483659
 seed = 9859028509821
-length = 21
-number_of_elements = 1000
-number_of_candidates = 100
+length = 6400
+number_of_elements = 10000
+number_of_candidates = 1000
 own_seed = 8585
 #Harvard pp. 44
 # c = Number of characters in the "alphabet"
@@ -30,6 +30,17 @@ threshold = (k * ((1 - c * epsilon) ** l_prime)) / 2
 closeness = int(math.floor(length * epsilon))
 
 print "values", l_prime, m_prime, threshold, closeness
+
+## Legeland
+# k = 20
+# length = 65536
+# l_prime = 2
+# m_prime = 2000
+# threshold = 6
+# closeness = 650
+
+#Legeland end
+
 
 
 
