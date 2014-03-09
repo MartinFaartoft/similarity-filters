@@ -62,10 +62,10 @@
 \bibliographystyle{plain}
 \begin{document}
 \date{May 21st 2014}
-\title{Similarity Search\\A Survey}
+\title{Similarity Filters\\A Survey}
 
 \author{Marcus Gregersen\\
-\texttt{mabg@itu.dk} 
+\texttt{mabg@itu.dk}
 \and Martin Faartoft\\
 \texttt{mlfa@itu.dk}
 \and Rick Marker\\
@@ -77,18 +77,53 @@
 \begin{abstract}
 The abstract goes here
 \end{abstract}
+
+% Rapport Struktur
+
+% Baseline afsnit / intro
+%   Definer problemet
+%     Bloom filters
+%     LSH
+%     k-closeness
+%     naiv løsning
+%       1 query / n*d^k inserts ELLER 1 insert, n*d^k querys
+%     False Negatives (skal det være her?)
+%   Begræns problemet
+%     Hamming afstand
+%     bit vektorer af længde L
+% Related work
+%   Mitzenmacher
+%   Kina
+% Vores idéer
+%   Teori
+%   ?????????????
+%   Eksperimenter
+% Konklusion
 \newpage
 
 \section{Introduction}
+In this report we investigate the following problem in data structures:
+Given a set $S$ of binary vectors (e.g. 32-bit words) create a data structure that given a query vector x determines if there exists a vector S that is a factor of \textit{k} close to x.
 
-We will analyse and compare two different approaches to solving the problem of querying a set for an approximate match on a query element.
+Different approaches of solving the similiarity search problem exists and in this report we will investigate two different approaches introduced by XX and YY. \todo{Indsæt XX og YY}
+Both leverages on the properties of standard bloom filters.
 
+In this report we will analyze and compare two different approaches of solving the problem of querying a set for an approximate match on a query element.
+%     Bloom filters
+%     LSH
+%     k-closeness
+%     naiv løsning
+%       1 query / n*d^k inserts ELLER 1 insert, n*d^k querys
+%     False Negatives (skal det være her?)
+%   Begræns problemet
+%     Hamming afstand
+%     bit vektorer af længde L
+
+
+% TODO 2 paragraffer om klassiske bloom filtre\\
+% TODO 2 paragraffer om LSH i bit-vector context
 \section{Related work} % Ideer fra related works
 \subsection{Distance-Sensitive Bloom Filters}
-TODO 2 paragraffer om klassiske bloom filtre\\
-TODO 2 paragraffer om LSH i bit-vector context
-
-
 Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. The aim is to expand upon classical Bloom filters, enabling them to answer the question: "Does a set contain an element similar to a given element?". They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
 
 The way they accomplish this is by using locality sensitive hashing algorithms (TODO REF), such that two elements that are sufficiently similar will, with a high probability, hash to the same value. They also use a partitioned Bloom filter, which is a like a standard Bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
@@ -99,13 +134,9 @@ A disadvantage to this approach, compared to a classical Bloom filter, is that i
 
 % Hvordan adskiller det sig fra normal bloom filters, hvor du har et threshold, t
 
-%valg af T, k, m', n', n
-  %pulje af hashfunktioner (seed til random generator)
-  %beregn true/false positives og true/false negatives
-%find epsilon og sigma fra ovenstående
-%diskutér false positives (sandsynlighed)
-%diskutér false negatives (kan de elimineres?)
-%tegn nogle grafer
+
+
+
 \subsection{Kinesere}
 The paper written by [TODO] takes a different approach than [TODO ref mitz]. They use a standard Bloom Filter data structure, but with LSH in place of ordinary hash functions - they call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both False Positives and False Negatives, so they augment this with additional data structures.
 
@@ -119,12 +150,29 @@ To minimize the probability of a FP, a Verification Scheme Bloom Filter is maint
 Minimizing False Negatives:
 They use a method called Active Overflowed Scheme, which utilizes the property of the locality sensitive hashing algorithms that proximate elements will be stored close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
 
-\section{Theory} %
+\section{Theory} % Dette afsnit skal nok hedde noget andet
+
+%valg af T, k, m', n', n
+  %pulje af hashfunktioner (seed til random generator)
+  %beregn true/false positives og true/false negatives
+%find epsilon og sigma fra ovenstående
+%diskutér false positives (sandsynlighed)
+%diskutér false negatives (kan de elimineres?)
+
+
 
 \section{Experiments}
+%tegn nogle grafer
+
+% Forsøg at finde variable eksperimentelt
+% Forsøg at variér closeness/farness i kandidater og tegn FP og FN-rate som funktion af disse
+
+
+
 
 \section{Conclusion}
- 
+\subsection{Suggested Improvements}
+
 \newpage
 
 \begin{thebibliography}{}
