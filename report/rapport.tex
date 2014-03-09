@@ -78,51 +78,40 @@
 The abstract goes here
 \end{abstract}
 
-% Rapport Struktur
-
-% Baseline afsnit / intro
-%   Definer problemet
-%     Bloom filters
-%     LSH
-%     k-closeness
-%     naiv løsning
-%       1 query / n*d^k inserts ELLER 1 insert, n*d^k querys
-%     False Negatives (skal det være her?)
-%   Begræns problemet
-%     Hamming afstand
-%     bit vektorer af længde L
-% Related work
-%   Mitzenmacher
-%   Kina
-% Vores idéer
-%   Teori
-%   ?????????????
-%   Eksperimenter
-% Konklusion
 \newpage
 
 \section{Introduction}
+%Copy paste fra Pagh, men jeg synes det spiller godt.
 In this report we investigate the following problem in data structures:
-Given a set $S$ of binary vectors (e.g. 32-bit words) create a data structure that given a query vector x determines if there exists a vector S that is a factor of \textit{k} close to x.
+Given a set $S$ of binary vectors (e.g. 32-bit words) create a data structure that given a query vector $x$ determines if there exists a vector in $S$ that is a factor of \textit{k} close to x.
 
 Different approaches of solving the similiarity search problem exists and in this report we will investigate two different approaches introduced by XX and YY. \todo{Indsæt XX og YY}
 Both leverages on the properties of standard bloom filters.
 
-In this report we will analyze and compare two different approaches of solving the problem of querying a set for an approximate match on a query element.
-%     Bloom filters
-%     LSH
-%     k-closeness
-%     naiv løsning
-%       1 query / n*d^k inserts ELLER 1 insert, n*d^k querys
-%     False Negatives (skal det være her?)
 %   Begræns problemet
+In this report we focus on the special case of similarity search were the elements in the set $S$ is bit-vectors. Futhermore we choose the 'closeness' metric to be the Hamming-distance.
+
+This report is structered in the following way. In the rest of this section we will establish a baseline. In section XX YY ZZ\todo{Indsæt når vi har skrevet mere}
+
+\subsection{Bloom filters}
+\subsection{Locality Sensitive Hashing}
+% TODO 2 paragraffer om LSH i bit-vector context
+
+\subsection{K-closeness}
+\subsection{Naïve implementation}
+%1 query / n*d^k inserts ELLER 1 insert, n*d^k querys
+
+
+
+%     False Negatives (skal det være her?)
+
 %     Hamming afstand
 %     bit vektorer af længde L
 
 
-% TODO 2 paragraffer om klassiske bloom filtre\\
-% TODO 2 paragraffer om LSH i bit-vector context
+
 \section{Related work} % Ideer fra related works
+
 \subsection{Distance-Sensitive Bloom Filters}
 Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. The aim is to expand upon classical Bloom filters, enabling them to answer the question: "Does a set contain an element similar to a given element?". They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
 
@@ -166,8 +155,6 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 
 % Forsøg at finde variable eksperimentelt
 % Forsøg at variér closeness/farness i kandidater og tegn FP og FN-rate som funktion af disse
-
-
 
 
 \section{Conclusion}
