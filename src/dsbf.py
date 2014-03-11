@@ -6,28 +6,52 @@ class DistanceSensitiveBloomFilter:
 	def __init__(self, k, m, bits_to_sample, prime, seed, threshold, length):
 		self.k = k
 		self.m = m
+
 		self.bits_to_sample = bits_to_sample
 		self.seed = seed
 		self.prime = prime
 		self.length = length
-		self.hash_functions = self.prepare_hash_functions(k, m) #make k of these
 		self.bit_array = []
 		self.threshold = threshold
+		random.seed(self.seed)
+
+		self.prepare_bits_to_sample()
+		self.hash_functions = self.prepare_hash_functions(k, m) #make k of these
+
 		for i in range(k):
 			self.bit_array.append([0] * m)
 
-
 	def prepare_hash_functions(self, k, m):
 		hash_functions = []
-		random.seed(self.seed)
+
 		for i in range(k):
 			a = random.randint(1, self.prime)
 			b = random.randint(1, self.prime)
-			bits = random.sample(range(self.length), self.bits_to_sample)
+			bits = self.sample_vector().next()
 			lsh = LocalitySensitiveHash(bits, m, a, b, self.prime)
 			hash_functions.append(lsh)
 
 		return hash_functions
+
+	def sample_vector(self):
+		for chunk in self.bucket_of_bits_to_sample:
+			yield chunk
+
+	def prepare_bits_to_sample(self):
+
+		l_prime = self.bits_to_sample
+		bits = range(self.length)
+
+		bucket_of_bits_to_sample = []
+
+		while len(bucket_of_bits_to_sample) < self.k:
+			random.shuffle(bits)
+			for i in range(self.length / l_prime):
+				chunk = bits[i * l_prime : i * l_prime + l_prime]
+				if len(chunk) != l_prime:
+					continue
+				bucket_of_bits_to_sample.append(chunk)
+		self.bucket_of_bits_to_sample = bucket_of_bits_to_sample
 
 	#counts number of 'turned on' bits in the filter, looking only at positions
 	#that 'element' hashes to

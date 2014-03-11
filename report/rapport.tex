@@ -81,38 +81,35 @@ The abstract goes here
 \newpage
 
 \section{Introduction}
-% Marcus: Copy paste fra Pagh, men jeg synes det spiller godt.
-In this report we investigate the following problem in data structures:
-Given a set $S$ of binary vectors (e.g. 32-bit words) create a data structure that given a query vector $x$ determines if there exists a vector in $S$ that is a factor of \textit{k} close to x.
+In the following we investigate the Similarity Search problem. Different approaches have been explored by earlier work, and in this report we will investigate XX and YY \todo{Indsæt XX og YY} and suggest improvements.
 
-Different approaches of solving the similiarity search problem exists and in this report we will investigate two different approaches introduced by XX and YY. \todo{Indsæt XX og YY}
-Both leverages on the properties of standard Bloom filters.
+\subsection{The Problem}
+The Similarity Search problem can be stated as follows: Given a set of elements $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$ using a certain metric.
 
 % Begræns problemet
-In this report we focus on the special case of similarity search were the elements in the set $S$ is bit-vectors $\{0,1\}^d$. Futhermore we choose the 'closeness' metric to be the Hamming distance.
-
-This report is structered in the following way. In the rest of this section we will establish a baseline. In section XX YY ZZ\todo{Indsæt når vi har skrevet mere}
+In the following we consider the Similarity Search problem for bit-vectors of length $l$, and Hamming distance as metric. This reduction maintains a high degree of generality, since elements from many domains can be encoded as bit-vectors.
 
 \subsection{Definitions}
 \begin{description}
+\item \textbf{Hamming distance}
+
+A distance metric for bit-vectors. The Hamming distance between two vectors $v_1, v_2$ is given as the number of positions $i$ where $v_1[i] \neq v_2[i]$
+
 \item \textbf{Bloom Filter}
 
-A standard Bloom filter is a space effient probabilistic data structure that is able to answer whether some element $x$ is member a set $s$ with high certainty.
-
-The Bloom filter works by hashing elements into serval indicies in a bit vector. The bit-vector is zero initialized, and when elements are added to the Bloom filter the indices in the bit-vector that the element is mapped to are set to 1.
-
-When querying the Bloom filter, whether some element $x$ is member of a set, the element is hashed to indicies in the bit-vector, and every value at these indicies has to be set to 1.
+\begin{quotation}
+A Bloom filter is an inexact representation of a set that allows for false positives when queried; that is, it can sometimes say that an element is in the set when it is not. In return, a Bloom filter offers very compact storage: less than 10 bits per element are required for a 1\% false positive probability, independent of the size or number of elements in the set.\cite{paper:bloom}
+\end{quotation}
 
 
-\item \textbf{Locality Sensitive Hashing}
+\item \textbf{Locality-Sensitive Hashing}
 
-We want to be able to hash elements that are similar to each other into the same bins with high probability. We have choosen the bit sampling method \todo{Ref. wiki} in which we define one LSH function as a number of hash functions $l$ that maps an input of high dimensionality into an output vector of length $l$.
+Ordinary hashing tries to minimize the probability of a collision, while Locality-Sensitive Hashing (LSH) attempts to maximize the collision probability for sufficiently similar elements.
 
-% Marcus siger: Skal vi gå mere i detaljer her. Vi kan jo godt tegne vores mapping fra Input til LSH til Bloom filter, men hører denne detalje til her eller under "Vores idéer" ?
+Not all similarity-measures admits LSH, but the Hamming distance metric on bit-vectors admits a particular simple one.
+Simply sample a number of bit positions from the input at random.
 
-% TODO 2 paragraffer om LSH i bit-vector context
-
-\item \textbf{K-closeness}
+\item \textbf{K-closeness} %Martin siger: Har jeg nu slettet/omskrevet det afsnit der omtalte K-closeness?
   \begin{itemize}
     \item If a vector $y$ in $S$ differs from $x$ in at most $k$ bits, it is $k$-close to $x$. The data structure must return “close”.
     \item If every vector $y$ in $S$ differs from $x$ in at least $2k$ bits, there is no vector that is $k$-close to $x$. We would like the data structure to return “not close”.
@@ -120,18 +117,18 @@ We want to be able to hash elements that are similar to each other into the same
   \end{itemize}
 
 \end{description}
-\subsection{Naïve implementation}
-If we want to be able to tell if there is an element in the bloom filter which is at most $d$ different from the element we query with, we have two options: One sacrificing space and the other sacrificing time. While keeping in mind that standard Bloom filters only answers exact membership, we see that one way of achieving this is by relying on extra insertions. This means that everytime an element is about to be added to the Bloom filter, all elements within distance $d$ is added in addition to the original element. This approach requires a lot more space depending on the [Universe], if we do not want the accuracy of the Bloom filter to be reduced too much. It does however still guarantee a fast response time\\
-Another way to go around this is by sacrificing time. This can be done by still doing normal insertions but instead querying for all elements with distance $d$ of the element we are comparing to. This approach has the benefit of still being space efficient but will cost on the running time.
-\todo{Hvor skal dette afsnit være}
-%1 query / n*d^k inserts ELLER 1 insert, n*d^k querys
 
+\subsection{Naïve Approaches}
+
+\paragraph{Brute force}
+The most obvious idea for solving the Similarity Search problem, is brute force. Store the elements $S$ in a linked list. When a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
+
+This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
+
+\paragraph{Bloom filters} TODO: If we allow false positives, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both. (her skal der stå noget om: 1 query / $n*d^k$ inserts ELLER 1 insert, $n*d^k$ queries)
 
 
 %     False Negatives (skal det være her?)
-
-%     Hamming afstand
-%     bit vektorer af længde L
 
 
 
@@ -142,27 +139,27 @@ Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\
 
 The way they accomplish this is by using locality sensitive hashing algorithms (TODO REF), such that two elements that are sufficiently similar will, with a high probability, hash to the same value. They also use a partitioned Bloom filter, which is a like a standard Bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
 
-When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold ($t$), set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false positives using this data structure.
+When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold (T), that is set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false positives using this data structure.
 
 A disadvantage to this approach, compared to a classical Bloom filter, is that it introduces the possibility of false negatives.
 
-% Hvordan adskiller det sig fra normal Bloom filters, hvor du har et threshold, t
+% Hvordan adskiller det sig fra normal bloom filters, hvor du har et threshold, t
 
 
 
 
-\subsection{Locality-Sensitive Hashing in Bloom Filters}
-The paper written \cite{paper:hua} by Hua et al. takes a different approach than in \cite{paper:harvard}. They use a standard Bloom filter data structure, but with LSHs in place of ordinary hash functions - they call this a 'Locality Sensitive Bloom Filter' (LSBF). This 'naive' approach, has a high probability of both false positives and false negatives, so they augment this with additional data structures.
+\subsection{Kinesere}
+The paper written by [TODO] takes a different approach than [TODO ref mitz]. They use a standard Bloom Filter data structure, but with LSH in place of ordinary hash functions - they call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both False Positives and False Negatives, so they augment this with additional data structures.
 
 Minimizing False Positives:
 Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things.
 1) An element $p$ is in the LSBF, that is approximately close to $q$ (a true positive)
 2) Multiple elements in the LSBF, together, have set the bits to $1$, and no single element is approximately close to $q$. (a false positive).
 
-To minimize the probability of a false positive, a Verification Scheme Bloom Filter is maintained as follows: Every time an element is added to the LSBF, the bit positions that are set to $1$ by that element, are encoded and added to a separate, standard Bloom filter (the verification scheme). Now when the LSBF would answer 'yes' to an approximate membership query, the Verification Scheme is queried to check if all the $1$ bits in the LSBF was due to any single element. If the Verification Scheme answers 'no', then a false positive is detected in the LSBF, and 'no' is returned. However, the Verification Scheme is also prone to false positives, since this is a property of Bloom filters, so this approach only servers to reduce the probability of a false positive, not eliminate them.
+To minimize the probability of a FP, a Verification Scheme Bloom Filter is maintained as follows: Every time an element is added to the LSBF, the bit positions that are set to $1$ by that element, are encoded and added to a separate, standard Bloom Filter (the Verification Scheme). Now when the LSBF would answer 'yes' to an AMQ [TODO define], the Verification Scheme is queried to check if all the $1$ bits in the LSBF was due to any single element. If the Verification Scheme answer 'no', then a FP is detected in the LSBF, and 'no' is answered to the AMQ. However, the Verification Scheme is also prone to FP, since this a property of Bloom Filters, so this approach only servers to reduce the probability of FP, not eliminate them.
 
 Minimizing False Negatives:
-Hua et al. use a method called Active Overflowed Scheme to minimize false negatives. This technique utilizes the property of the locality sensitive hashing algorithms that elements which are much a like will hash to a value close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
+They use a method called Active Overflowed Scheme, which utilizes the property of the locality sensitive hashing algorithms that proximate elements will be stored close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
 
 \section{Theory} % Dette afsnit skal nok hedde noget andet
 
@@ -190,12 +187,12 @@ Hua et al. use a method called Active Overflowed Scheme to minimize false negati
 \begin{thebibliography}{}
 
 \bibitem{paper:harvard}
-Adam Kirsch, Michael Mitzenmacher\\
+Adam Kirsch, Michael Mitzenmacher
 Distance-Sensitive Bloom Filters
 
-\bibitem{paper:hua}
-Yu hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng\\
-Locality-Sensitive Bloom Filter for Approximate Membership Query
+\bibitem{paper:bloom}
+Flavio Bonomi, Michael Mitzenmacher, Rina Panigrahy, Sushil Singh, and George Varghese
+An Improved Construction for Counting Bloom Filters
 
       %Sådan her ref'er man en URL
       %\bibitem{lit:json}
