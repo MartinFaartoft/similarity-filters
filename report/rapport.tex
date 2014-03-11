@@ -121,6 +121,8 @@ We want to be able to hash elements that are similar to each other into the same
 
 \end{description}
 \subsection{Naïve implementation}
+If we want to be able to tell if there is an element in the bloom filter which is at most $d$ different from the element we query with, we have two options: One sacrificing space and the other sacrificing time. While keeping in mind that standard Bloom filters only answers exact membership, we see that one way of achieving this is by relying on extra insertions. This means that everytime an element is about to be added to the Bloom filter, all elements within distance $d$ is added in addition to the original element. This approach requires a lot more space depending on the [Universe], if we do not want the accuracy of the Bloom filter to be reduced too much. It does however still guarantee a fast response time\\
+Another way to go around this is by sacrificing time. This can be done by still doing normal insertions but instead querying for all elements with distance $d$ of the element we are comparing to. This approach has the benefit of still being space efficient but will cost on the running time.
 \todo{Hvor skal dette afsnit være}
 %1 query / n*d^k inserts ELLER 1 insert, n*d^k querys
 
