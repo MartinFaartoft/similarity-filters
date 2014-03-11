@@ -86,7 +86,7 @@ In this report we investigate the following problem in data structures:
 Given a set $S$ of binary vectors (e.g. 32-bit words) create a data structure that given a query vector $x$ determines if there exists a vector in $S$ that is a factor of \textit{k} close to x.
 
 Different approaches of solving the similiarity search problem exists and in this report we will investigate two different approaches introduced by XX and YY. \todo{Indsæt XX og YY}
-Both leverages on the properties of standard bloom filters.
+Both leverages on the properties of standard Bloom filters.
 
 % Begræns problemet
 In this report we focus on the special case of similarity search were the elements in the set $S$ is bit-vectors $\{0,1\}^d$. Futhermore we choose the 'closeness' metric to be the Hamming distance.
@@ -97,18 +97,18 @@ This report is structered in the following way. In the rest of this section we w
 \begin{description}
 \item \textbf{Bloom Filter}
 
-A standard bloom filter is a space effient probabilistic data structure that is able to answer whether some element $x$ is member a set $s$ with high certainty.
+A standard Bloom filter is a space effient probabilistic data structure that is able to answer whether some element $x$ is member a set $s$ with high certainty.
 
-The bloom filter works by hashing elements into serval indicies in a bit vector. The bit-vector is zero initialized, and when elements are added to the bloom filter the indices in the bit-vector that the element is mapped to are set to 1.
+The Bloom filter works by hashing elements into serval indicies in a bit vector. The bit-vector is zero initialized, and when elements are added to the Bloom filter the indices in the bit-vector that the element is mapped to are set to 1.
 
-When querying the bloom filter, whether some element $x$ is member of a set, the element is hashed to indicies in the bit-vector, and every value at these indicies has to be set to 1.
+When querying the Bloom filter, whether some element $x$ is member of a set, the element is hashed to indicies in the bit-vector, and every value at these indicies has to be set to 1.
 
 
 \item \textbf{Locality Sensitive Hashing}
 
 We want to be able to hash elements that are similar to each other into the same bins with high probability. We have choosen the bit sampling method \todo{Ref. wiki} in which we define one LSH function as a number of hash functions $l$ that maps an input of high dimensionality into an output vector of length $l$.
 
-% Marcus siger: Skal vi gå mere i detaljer her. Vi kan jo godt tegne vores mapping fra Input til LSH til bloom filter, men hører denne detalje til her eller under "Vores idéer" ?
+% Marcus siger: Skal vi gå mere i detaljer her. Vi kan jo godt tegne vores mapping fra Input til LSH til Bloom filter, men hører denne detalje til her eller under "Vores idéer" ?
 
 % TODO 2 paragraffer om LSH i bit-vector context
 
@@ -140,27 +140,27 @@ Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\
 
 The way they accomplish this is by using locality sensitive hashing algorithms (TODO REF), such that two elements that are sufficiently similar will, with a high probability, hash to the same value. They also use a partitioned Bloom filter, which is a like a standard Bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
 
-When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold (T), that is set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false positives using this data structure.
+When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold ($t$), set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false positives using this data structure.
 
 A disadvantage to this approach, compared to a classical Bloom filter, is that it introduces the possibility of false negatives.
 
-% Hvordan adskiller det sig fra normal bloom filters, hvor du har et threshold, t
+% Hvordan adskiller det sig fra normal Bloom filters, hvor du har et threshold, t
 
 
 
 
-\subsection{Kinesere}
-The paper written by [TODO] takes a different approach than [TODO ref mitz]. They use a standard Bloom Filter data structure, but with LSH in place of ordinary hash functions - they call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both False Positives and False Negatives, so they augment this with additional data structures.
+\subsection{Locality-Sensitive Hashing in Bloom Filters}
+The paper written \cite{paper:hua} by Hua et al. takes a different approach than in \cite{paper:harvard}. They use a standard Bloom filter data structure, but with LSHs in place of ordinary hash functions - they call this a 'Locality Sensitive Bloom Filter' (LSBF). This 'naive' approach, has a high probability of both false positives and false negatives, so they augment this with additional data structures.
 
 Minimizing False Positives:
 Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things.
 1) An element $p$ is in the LSBF, that is approximately close to $q$ (a true positive)
 2) Multiple elements in the LSBF, together, have set the bits to $1$, and no single element is approximately close to $q$. (a false positive).
 
-To minimize the probability of a FP, a Verification Scheme Bloom Filter is maintained as follows: Every time an element is added to the LSBF, the bit positions that are set to $1$ by that element, are encoded and added to a separate, standard Bloom Filter (the Verification Scheme). Now when the LSBF would answer 'yes' to an AMQ [TODO define], the Verification Scheme is queried to check if all the $1$ bits in the LSBF was due to any single element. If the Verification Scheme answer 'no', then a FP is detected in the LSBF, and 'no' is answered to the AMQ. However, the Verification Scheme is also prone to FP, since this a property of Bloom Filters, so this approach only servers to reduce the probability of FP, not eliminate them.
+To minimize the probability of a false positive, a Verification Scheme Bloom Filter is maintained as follows: Every time an element is added to the LSBF, the bit positions that are set to $1$ by that element, are encoded and added to a separate, standard Bloom filter (the verification scheme). Now when the LSBF would answer 'yes' to an approximate membership query, the Verification Scheme is queried to check if all the $1$ bits in the LSBF was due to any single element. If the Verification Scheme answers 'no', then a false positive is detected in the LSBF, and 'no' is returned. However, the Verification Scheme is also prone to false positives, since this is a property of Bloom filters, so this approach only servers to reduce the probability of a false positive, not eliminate them.
 
 Minimizing False Negatives:
-They use a method called Active Overflowed Scheme, which utilizes the property of the locality sensitive hashing algorithms that proximate elements will be stored close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
+Hua et al. use a method called Active Overflowed Scheme to minimize false negatives. This technique utilizes the property of the locality sensitive hashing algorithms that elements which are much a like will hash to a value close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
 
 \section{Theory} % Dette afsnit skal nok hedde noget andet
 
@@ -188,8 +188,12 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 \begin{thebibliography}{}
 
 \bibitem{paper:harvard}
-Adam Kirsch, Michael Mitzenmacher
+Adam Kirsch, Michael Mitzenmacher\\
 Distance-Sensitive Bloom Filters
+
+\bibitem{paper:hua}
+Yu hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng\\
+Locality-Sensitive Bloom Filter for Approximate Membership Query
 
       %Sådan her ref'er man en URL
       %\bibitem{lit:json}
