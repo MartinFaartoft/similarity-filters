@@ -71,25 +71,32 @@ def run():
     dsbf.add_element(candidate)
     populate_dsbf(dsbf, number_of_elements - 1, length)
     #print 'after populate'
-    count_true = 0
-    count_false = 0
+    tp = 0
+    fp = 0
+    tn = 0
+    fn = 0
+    p = 0
+    n = 0
     for close_element in generate_close_candidates(candidate, 0, closeness, number_of_candidates):
         #print dsbf.count_number_of_true_values(close_element)
         if dsbf.is_close(close_element):
-            count_true += 1
+            tp += 1
         else:
-            count_false += 1
+            fn += 1
 
-    print "true positives: " + str(count_true)
-    print "false negatives: " + str((number_of_candidates - count_true) / float(number_of_candidates))
+    print "halvvejs"
 
     count_true = 0
     for far_element in generate_close_candidates(candidate, farness, length, number_of_candidates):
         if dsbf.is_close(far_element):
-            count_true += 1
+            fp += 1
+        else:
+            tn += 1
 
-    print "true negatives: " + str(number_of_candidates - count_true)
-    print "false positives: " + str((count_true) / float(number_of_candidates))
+    print "TP rate: " + str(tp / float(tp+fp))
+    print "FN rate: " + str(fn / float(fn+tn))
+    print "TN rate: " + str(tn / float(tn+fn))
+    print "FP rate: " + str(fp / float(tp+fp))
 
 
 
