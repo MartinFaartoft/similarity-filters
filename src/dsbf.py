@@ -3,11 +3,11 @@ class DistanceSensitiveBloomFilter:
 
 	#k = number of hash functions to use
 	#m = length of each subarray/partition (equal to max output value from each hash function)
-	def __init__(self, k, m, bits_to_sample, prime, seed, threshold, length):
+	def __init__(self, k, m, l_prime, prime, seed, threshold, length):
 		self.k = k
 		self.m = m
 
-		self.bits_to_sample = bits_to_sample
+		self.l_prime = l_prime
 		self.seed = seed
 		self.prime = prime
 		self.length = length
@@ -34,10 +34,8 @@ class DistanceSensitiveBloomFilter:
 		return hash_functions
 
 	def prepare_bits_to_sample(self):
-
-		l_prime = self.bits_to_sample
+		l_prime = self.l_prime
 		bits = range(self.length)
-
 		bucket_of_bits_to_sample = []
 
 		while len(bucket_of_bits_to_sample) < self.k:
@@ -91,25 +89,3 @@ class LocalitySensitiveHash:
 
 def calculate_hamming_distance(element, other_element):
 	return sum([abs(pair[0]-pair[1]) for pair in zip(element, other_element)])
-
-# if __name__ == '__main__':
-
-# 	randBinList = lambda n: [random.randint(0,1) for b in range(1,n+1)]
-
-
-# 	a = DistanceSensitiveBloomFilter(5,10, 5, 2147483659, 2)
-
-# 	#print a.bit_array
-# 	elem = randBinList(15)
-
-# 	a.add_element(elem)
-# 	a.add_element(randBinList(15))
-# 	a.add_element(randBinList(15))
-# 	a.add_element(randBinList(15))
-# 	a.add_element(randBinList(15))
-# 	a.add_element(randBinList(15))
-# 	a.add_element(randBinList(15))
-# 	a.add_element(randBinList(15))
-
-
-# 	print a.count_number_of_true_values(elem)
