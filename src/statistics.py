@@ -10,14 +10,14 @@ prime_100 = 2147483659
 seed = random.randint(0, 100000)
 length = 65536
 number_of_elements = 1000
-number_of_candidates = 10000
+number_of_candidates = 1000
 
 #Harvard pp. 44
 # c = 1 if number of characters in the "alphabet" = 2
 c = 1
 epsilon = 0.1
 delta = 0.4
-k = 20
+k = 21
 
 n = number_of_elements
 
@@ -34,7 +34,7 @@ farness = int(math.floor(length * delta))
 
 
 #print "seed: " + str(seed)
-#print "l_prime:", l_prime, "m_prime:", m_prime, "T:", threshold, closeness
+
 
 
 
@@ -44,8 +44,8 @@ def generate_close_candidates(candidate, min_distance, max_distance, number_of_c
     #Generate bit mask
     random.seed(seed)
     zeroes = [0] * len(candidate)
-    number_of_bits_to_flip = random.randint(min_distance, max_distance)
-    #number_of_bits_to_flip = close
+    #number_of_bits_to_flip = random.randint(min_distance, max_distance)
+    number_of_bits_to_flip = max_distance if min_distance == 0 else min_distance
     for i in range(number_of_bits_to_flip):
         zeroes[i] = 1
 
@@ -70,13 +70,12 @@ def run():
     candidate = randBinList(length)
     dsbf.add_element(candidate)
     populate_dsbf(dsbf, number_of_elements - 1, length)
+
     #print 'after populate'
     tp = 0
     fp = 0
     tn = 0
     fn = 0
-    p = 0
-    n = 0
     for close_element in generate_close_candidates(candidate, 0, closeness, number_of_candidates):
         #print dsbf.count_number_of_true_values(close_element)
         if dsbf.is_close(close_element):
@@ -84,7 +83,6 @@ def run():
         else:
             fn += 1
 
-    print "halvvejs"
 
     count_true = 0
     for far_element in generate_close_candidates(candidate, farness, length, number_of_candidates):
@@ -93,11 +91,12 @@ def run():
         else:
             tn += 1
 
-    print "TP rate: " + str(tp / float(tp+fp))
-    print "FN rate: " + str(fn / float(fn+tn))
-    print "TN rate: " + str(tn / float(tn+fn))
-    print "FP rate: " + str(fp / float(tp+fp))
+    tpr = tp / float(tp+fn)
+    fnr = fn / float(tp+fn)
+    fpr = fp / float(fp+tn)
+    tnr = tn / float(fp+tn)
 
+    return (tpr, fnr, fpr, tnr)
 
 
 def pagh_graph():
@@ -117,6 +116,19 @@ def pagh_graph():
     import json
     print json.dumps(k_true_list)
 
+def harvard_graph():
+    data = []
+    for sovs in range(1,30,5):
+        k = sovs
+        threshold = (sovs * ((1 - c * epsilon) ** l_prime)) / 2
+        data.append(run())
+        print sovs
+
+    import json
+
+    with open('harvard_graph.json', 'w') as outfile:
+        json.dump(data, outfile)
+
 
 
 
@@ -125,6 +137,7 @@ def pagh_graph():
 
 
 #pagh_graph()
-run()
+#run()
+harvard_graph()
 
 #def __init__(self, k, m, bits_to_sample, prime, seed):
