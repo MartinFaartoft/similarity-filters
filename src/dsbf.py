@@ -16,8 +16,6 @@ class DistanceSensitiveBloomFilter:
 		random.seed(self.seed)
 
 		self.prepare_bits_to_sample()
-		for bits in self.sample_vector():
-			print bits
 		self.hash_functions = self.prepare_hash_functions(k, m) #make k of these
 
 		for i in range(k):
