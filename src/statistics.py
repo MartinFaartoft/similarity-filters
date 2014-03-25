@@ -8,17 +8,16 @@ randBinList = lambda n: [random.randint(0, 1) for b in range(1, n+1)]
 prime_100 = 2147483659
 
 seed = random.randint(0, 100000)
-length = 100
-number_of_elements = 10
-
-number_of_candidates = 2000
+length = 65536
+number_of_elements = 1000
+number_of_candidates = 10000
 
 #Harvard pp. 44
-# c = Number of characters in the "alphabet"
+# c = 1 if number of characters in the "alphabet" = 2
 c = 1
 epsilon = 0.1
 delta = 0.4
-k = 10
+k = 20
 
 n = number_of_elements
 
@@ -39,13 +38,14 @@ farness = int(math.floor(length * delta))
 
 
 
-def generate_close_candidates(candidate, close, number_of_candidates):
+def generate_close_candidates(candidate, min_distance, max_distance, number_of_candidates):
     """ candidate = candidate bit array
         close = number of bits to flip """
     #Generate bit mask
     random.seed(seed)
     zeroes = [0] * len(candidate)
-    number_of_bits_to_flip = random.randint(0, close)
+    number_of_bits_to_flip = random.randint(min_distance, max_distance)
+    #number_of_bits_to_flip = close
     for i in range(number_of_bits_to_flip):
         zeroes[i] = 1
 
@@ -72,20 +72,23 @@ def run():
     populate_dsbf(dsbf, number_of_elements - 1, length)
     #print 'after populate'
     count_true = 0
-    for close_element in generate_close_candidates(candidate, closeness, number_of_candidates):
+    count_false = 0
+    for close_element in generate_close_candidates(candidate, 0, closeness, number_of_candidates):
         #print dsbf.count_number_of_true_values(close_element)
         if dsbf.is_close(close_element):
             count_true += 1
+        else:
+            count_false += 1
 
-    print "positives: " + str(count_true)
+    print "true positives: " + str(count_true)
     print "false negatives: " + str((number_of_candidates - count_true) / float(number_of_candidates))
 
     count_true = 0
-    for far_element in generate_close_candidates(candidate, farness, number_of_candidates):
+    for far_element in generate_close_candidates(candidate, farness, length, number_of_candidates):
         if dsbf.is_close(far_element):
             count_true += 1
 
-    print "negatives: " + str(number_of_candidates - count_true)
+    print "true negatives: " + str(number_of_candidates - count_true)
     print "false positives: " + str((count_true) / float(number_of_candidates))
 
 
@@ -99,13 +102,13 @@ def pagh_graph():
     k_true_list = []
     for close_element in generate_close_candidates(candidate, closeness, number_of_candidates):
         k_true_list.append(dsbf.count_number_of_true_values(close_element))
-    for hash_func in dsbf.hash_functions:
-        print hash_func.indices_of_bits_to_sample
+    #for hash_func in dsbf.hash_functions:
+        #print hash_func.indices_of_bits_to_sample
 
     k_true_list.sort()
 
-    #import json
-    #print json.dumps(k_true_list)
+    import json
+    print json.dumps(k_true_list)
 
 
 
@@ -114,7 +117,7 @@ def pagh_graph():
 
 
 
-pagh_graph()
-#run()
+#pagh_graph()
+run()
 
 #def __init__(self, k, m, bits_to_sample, prime, seed):
