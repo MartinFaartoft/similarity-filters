@@ -10,7 +10,7 @@ prime_100 = 2147483659
 seed = random.randint(0, 100000)
 length = 65536
 number_of_elements = 10
-number_of_candidates = 20
+number_of_candidates = 2000
 #Harvard pp. 44
 # c = Number of characters in the "alphabet"
 c = 1
@@ -43,7 +43,8 @@ def generate_close_candidates(candidate, close, number_of_candidates):
     #Generate bit mask
     random.seed(seed)
     zeroes = [0] * len(candidate)
-    for i in range(close):
+    number_of_bits_to_flip = random.randint(0, close)
+    for i in range(number_of_bits_to_flip):
         zeroes[i] = 1
 
     for i in range(number_of_candidates):
@@ -96,6 +97,8 @@ def pagh_graph():
     k_true_list = []
     for close_element in generate_close_candidates(candidate, closeness, number_of_candidates):
         k_true_list.append(dsbf.count_number_of_true_values(close_element))
+    for hash_func in dsbf.hash_functions:
+        print hash_func.indices_of_bits_to_sample
 
     k_true_list.sort()
 
