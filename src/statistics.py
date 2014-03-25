@@ -2,20 +2,21 @@ from dsbf import DistanceSensitiveBloomFilter
 import random
 import math
 
+
 randBinList = lambda n: [random.randint(0, 1) for b in range(1, n+1)]
 
 prime_100 = 2147483659
 
 seed = random.randint(0, 100000)
 length = 65536
-number_of_elements = 1000
-number_of_candidates = 2000
+number_of_elements = 10
+number_of_candidates = 20
 #Harvard pp. 44
 # c = Number of characters in the "alphabet"
 c = 1
 epsilon = 0.1
 delta = 0.4
-k = 5
+k = 20
 
 n = number_of_elements
 
@@ -31,8 +32,8 @@ closeness = int(math.floor(length * epsilon))
 farness = int(math.floor(length * delta))
 
 
-print "seed: " + str(seed)
-print "l_prime:", l_prime, "m_prime:", m_prime, "T:", threshold, closeness
+#print "seed: " + str(seed)
+#print "l_prime:", l_prime, "m_prime:", m_prime, "T:", threshold, closeness
 
 
 
@@ -86,8 +87,29 @@ def run():
 
 
 
+def pagh_graph():
+    dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, length)
+    candidate = randBinList(length)
+    dsbf.add_element(candidate)
+    populate_dsbf(dsbf, number_of_elements - 1, length)
+    count_true = 0
+    k_true_list = []
+    for close_element in generate_close_candidates(candidate, closeness, number_of_candidates):
+        k_true_list.append(dsbf.count_number_of_true_values(close_element))
+
+    k_true_list.sort()
+
+    import json
+    print json.dumps(k_true_list)
 
 
-run()
+
+
+
+
+
+
+pagh_graph()
+#run()
 
 #def __init__(self, k, m, bits_to_sample, prime, seed):
