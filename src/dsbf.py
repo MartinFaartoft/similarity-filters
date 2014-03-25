@@ -16,6 +16,8 @@ class DistanceSensitiveBloomFilter:
 		random.seed(self.seed)
 
 		self.prepare_bits_to_sample()
+		for bits in self.sample_vector():
+			print bits
 		self.hash_functions = self.prepare_hash_functions(k, m) #make k of these
 
 		for i in range(k):
@@ -27,15 +29,11 @@ class DistanceSensitiveBloomFilter:
 		for i in range(k):
 			a = random.randint(1, self.prime)
 			b = random.randint(1, self.prime)
-			bits = self.sample_vector().next()
+			bits = self.bucket_of_bits_to_sample[i]
 			lsh = LocalitySensitiveHash(bits, m, a, b, self.prime)
 			hash_functions.append(lsh)
 
 		return hash_functions
-
-	def sample_vector(self):
-		for chunk in self.bucket_of_bits_to_sample:
-			yield chunk
 
 	def prepare_bits_to_sample(self):
 

@@ -8,15 +8,15 @@ randBinList = lambda n: [random.randint(0, 1) for b in range(1, n+1)]
 prime_100 = 2147483659
 
 seed = random.randint(0, 100000)
-length = 65536
+length = 100
 number_of_elements = 10
-number_of_candidates = 20
+number_of_candidates = 200
 #Harvard pp. 44
 # c = Number of characters in the "alphabet"
 c = 1
 epsilon = 0.1
 delta = 0.4
-k = 20
+k = 10
 
 n = number_of_elements
 
@@ -99,8 +99,8 @@ def pagh_graph():
 
     k_true_list.sort()
 
-    import json
-    print json.dumps(k_true_list)
+    #import json
+    #print json.dumps(k_true_list)
 
 
 
