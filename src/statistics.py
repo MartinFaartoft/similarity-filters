@@ -109,10 +109,10 @@ def pagh_graph():
     print json.dumps(k_true_list)
 
 def harvard_graph():
-    epsilon = 0.1
+    epsilon = 0.05
     delta = 0.4
     l = 65536
-    n = 1000
+    n = 10000
     number_of_candidates = 1000
 
 
@@ -120,13 +120,13 @@ def harvard_graph():
     farness = int(math.floor(l * delta))
     data = []
 
-    for step_k in range(5,30,5):
+    for step_k in range(1,30,1):
         print "K=",step_k
         epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_harvard_params(epsilon=epsilon, delta=delta, l=l, k=step_k, n=n)
         dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
-                
+
         data_row = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates)
-        data.append(k, data_row)
+        data.append((k, data_row))
 
     import json
 

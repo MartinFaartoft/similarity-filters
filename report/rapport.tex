@@ -17,6 +17,7 @@
 \usepackage{hyperref}
 \usepackage{pdfpages}
 \usepackage{caption}
+\usepackage{epsfig}
 \usepackage{subcaption}
 \usepackage{listings}
 \usepackage{color}
@@ -61,6 +62,7 @@
 
 \bibliographystyle{plain}
 \begin{document}
+\graphicspath{ {./images/} }
 \date{May 21st 2014}
 \title{Similarity Filters\\A Survey}
 
@@ -173,6 +175,33 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 
 
 \section{Experiments}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{FPR1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{FNR1}
+\end{subfigure}
+\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0.1, and $\sigma$ = 0.4}
+\label{fig:n1000}
+\end{figure}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{FPR2}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{FNR2}
+\end{subfigure}
+\caption{The observed false positive and false negative rates for $n$ = 10000, $l$ = 65536, $\epsilon$ = 0.05, and $\sigma$ = 0.4}
+\label{fig:n10000}
+\end{figure}
+
 %tegn nogle grafer
 
 % Forsøg at finde variable eksperimentelt
