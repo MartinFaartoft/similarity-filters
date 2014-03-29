@@ -153,14 +153,26 @@ A disadvantage to this approach, compared to a classical Bloom filter, is that i
 \subsection{Kinesere}
 The paper written by [TODO] takes a different approach than [TODO ref mitz]. They use a standard Bloom Filter data structure, but with LSH in place of ordinary hash functions - they call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both False Positives and False Negatives, so they augment this with additional data structures.
 
-Minimizing False Positives:
+\paragraph{Minimizing False Positives}
 Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things.
-1) An element $p$ is in the LSBF, that is approximately close to $q$ (a true positive)
-2) Multiple elements in the LSBF, together, have set the bits to $1$, and no single element is approximately close to $q$. (a false positive).
+1) An element $p$ exists in the LSBF, that is approximately close to $q$ (a true positive)
+2) Multiple elements added to the LSBF, together, have conspired to set the all the bit positions corresponding to $q$ to $1$, and no single element is approximately close to $q$. (a false positive).
 
-To minimize the probability of a FP, a Verification Scheme Bloom Filter is maintained as follows: Every time an element is added to the LSBF, the bit positions that are set to $1$ by that element, are encoded and added to a separate, standard Bloom Filter (the Verification Scheme). Now when the LSBF would answer 'yes' to an AMQ [TODO define], the Verification Scheme is queried to check if all the $1$ bits in the LSBF was due to any single element. If the Verification Scheme answer 'no', then a FP is detected in the LSBF, and 'no' is answered to the AMQ. However, the Verification Scheme is also prone to FP, since this a property of Bloom Filters, so this approach only servers to reduce the probability of FP, not eliminate them.
+To minimize the probability of a FP, a Verification Scheme (VS) data structure is added.
+This is a standard Bloom filter (ordinary hashing, not LSH), and is maintained as follows: Every time an element is added to the LSBF, the bit positions that corresponds to that element, are encoded (see figure \ref{fig:verification_scheme}) and inserted into the VS Bloom filter. 
+Now when the LSBF is queried, it first verifies that all bits corresponding to the query element $q$ are set to $1$ in the LSBF, and then encodes the bit positions (figure \ref{fig:verification_scheme}), and queries the VS for an exact match. If an exact match for the encoded version of $q$ is found in VS, then it is highly likely that a single element $p$ is responsible for setting all the bits in the LSBF, and the query will return a 'yes'. If, on the other hand, the VS does not contain an element that matches the encoded $q$, then multiple elements must be responsible for the bits being set, and the query will return 'no', effectively catching a false positive. 
 
-Minimizing False Negatives:
+\begin{figure}[H]
+\centering
+\includegraphics[width=.5\linewidth]{verification_scheme}
+\caption{Maintaining the Verification Scheme, when adding elements to an LSBF}
+\label{fig:verification_scheme}
+\end{figure}
+
+
+Note that the VS is a standard Bloom filter, and is prone to false positives itself. That means it only serves to minimized false positives, and not outright remove them.
+
+\paragraph{Minimizing False Negatives}
 They use a method called Active Overflowed Scheme, which utilizes the property of the locality sensitive hashing algorithms that proximate elements will be stored close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
 
 \section{Theory} % Dette afsnit skal nok hedde noget andet
