@@ -89,7 +89,7 @@ In the following we consider the Similarity Search problem for bit-vectors of le
 \begin{description}
 \item \textbf{Hamming distance}
 
-A distance metric for bit-vectors. The Hamming distance between two vectors $v_1, v_2$ is given as the number of positions $i$ where $v_1[i] \neq v_2[i]$
+A distance metric for bit-vectors. The Hamming distance between two vectors $v_1, v_2$ is defined as the number of positions $i$ where $v_1[i] \neq v_2[i]$.
 
 \item \textbf{Bloom Filter}
 
@@ -100,16 +100,19 @@ A Bloom filter is an inexact representation of a set that allows for false posit
 
 \item \textbf{Locality-Sensitive Hashing}
 
-Ordinary hashing tries to minimize the probability of a collision, while Locality-Sensitive Hashing (LSH) attempts to maximize the collision probability for sufficiently similar elements.
+Regular hashing tries to spread out the hash-values of different elements, to minimize the probability of a collision. Locality-Sensitive Hashing (LSH) tries to group similar elements, by maximizing the collision probability for similar elements.
 
-Not all similarity-measures admits LSH, but the Hamming distance metric on bit-vectors admits a particular simple one.
-Simply sample a number of bit positions from the input at random.
+The LSH is closely tied to the distance metric, and many distance metrics have no known LSH. The Hamming distance metric on bit-vectors has a particularly simple LSH: Sample a fixed number of bits from the input vector, uniformly at random. 
 
-\item \textbf{K-closeness} %Martin siger: Har jeg nu slettet/omskrevet det afsnit der omtalte K-closeness?
+It is intuitively obvious, that if two elements only differ on the non-sampled bits, then they will hash to the same value, and thus be considered "close" by the LSH.
+
+The more bits two vectors have in common, the higher the probability will be that a random LSH will hash them to the same value.
+
+\item \textbf{$\epsilon$-closeness}
   \begin{itemize}
-    \item If a vector $y$ in $S$ differs from $x$ in at most $k$ bits, it is $k$-close to $x$. The data structure must return “close”.
-    \item If every vector $y$ in $S$ differs from $x$ in at least $2k$ bits, there is no vector that is $k$-close to $x$. We would like the data structure to return “not close”.
-    \item In all other cases, i.e. when the distance to the nearest vector is between $k+1$ and $2k-1$, the data structure can give any answer it likes.
+    \item If an element $s \in S$ differs from $x$ in at most an $\epsilon$-fraction of the bits, it is said to be $\epsilon$-close to $x$. The data structure must return “close”.
+    \item If every vector $s \in S$ differs from $x$ in at least a $\delta$-fraction of the bits, then the data structure should return "not close".
+    \item In all other cases, i.e. when the distance to the nearest vector is between $\epsilon$ and $\delta$, the data structure can give any answer it likes.
   \end{itemize}
 
 \end{description}
@@ -182,7 +185,7 @@ A. Kirsch and M. Mitzenmacher, "Distance-Sensitive Bloom Filters", Proc. Eighth 
 Bonomi, Flavio and Mitzenmacher, Michael and Panigrahy, Rina and Singh, Sushil and Varghese, George, "An Improved Construction for Counting Bloom Filters", Algorithms – ESA 2006 
 
 \bibitem{paper:hua}
-Yu Hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng, "Locality-Sensitive Bloom Filter for Approximate Membership Query", IEEE TRANSACTIONS ON COMPUTERS, VOL. 61, NO. 6, 2012
+Yu Hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng, "Locality-Sensitive Bloom Filter for Approximate Membership Query", IEEE Transactions on Computers, Vol. 61, No. 6, 2012
  
 \end{thebibliography}
 
