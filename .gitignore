@@ -1,5 +1,4 @@
 *.py[cod]
-
 # C extensions
 *.so
 
@@ -41,3 +40,5 @@ nosetests.xml
 *.log
 *.aux
 *.fdb_latexmk
+
+*.DS_Store
