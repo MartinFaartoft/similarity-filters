@@ -63,8 +63,8 @@
 \bibliographystyle{plain}
 \begin{document}
 \graphicspath{ {./images/} }
-\date{May 21st 2014}
-\title{Similarity Filters\\A Survey}
+\date{April 22nd 2014}
+\title{Similarity Filters\\An Introduction}
 
 \author{Marcus Gregersen\\
 \texttt{mabg@itu.dk}
@@ -72,18 +72,12 @@
 \texttt{mlfa@itu.dk}
 \and Rick Marker\\
 \texttt{rdam@itu.dk}}
-%TODO vejleder og institut
 \clearpage\maketitle
 \thispagestyle{empty}
 \setcounter{page}{1}
-\begin{abstract}
-The abstract goes here
-\end{abstract}
-
-\newpage
 
 \section{Introduction}
-In the following we investigate the Similarity Search problem. Different approaches have been explored by earlier work, and in this report we will investigate XX and YY \todo{Indsæt XX og YY} and suggest improvements.
+In the following we investigate the Similarity Search problem. Different approaches have been explored by earlier work, and in this report we will investigate two of those; 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} by Kirsch and Mitzenmacher, and 'Locality-Sensitive Bloom Filter for Approximate Membership Query'\cite{paper:hua} by Hua et al.
 
 \subsection{The Problem}
 The Similarity Search problem can be stated as follows: Given a set of elements $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$ using a certain metric.
@@ -127,7 +121,11 @@ The most obvious idea for solving the Similarity Search problem, is brute force.
 
 This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
 
-\paragraph{Bloom filters} TODO: If we allow false positives, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both. (her skal der stå noget om: 1 query / $n*d^k$ inserts ELLER 1 insert, $n*d^k$ queries)
+\paragraph{Bloom filters} TODO: If we allow false positives, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both. (her skal der stå noget om: 1 query / $n\cdot d^k$ inserts ELLER 1 insert, $n \cdot d^k$ queries)
+
+If we want to be able to tell if there is an element in the bloom filter which is at most $d$ different from the element we query with, we have two options: One sacrificing space and the other sacrificing time. While keeping in mind that standard Bloom filters only answers exact membership, we see that one way of achieving this is by relying on extra insertions. This means that everytime an element is about to be added to the Bloom filter, all elements within distance $d$ is added in addition to the original element. This approach requires a lot more space depending on the [Universe], if we do not want the accuracy of the Bloom filter to be reduced too much. It does however still guarantee a fast response time\\
+
+Another way to go around this is by sacrificing time. This can be done by still doing normal insertions but instead querying for all elements with distance $d$ of the element we are comparing to. This approach has the benefit of still being space efficient but will cost on the running time.
 
 
 %     False Negatives (skal det være her?)
@@ -175,75 +173,17 @@ Note that the VS is a standard Bloom filter, and therefor allows false positives
 \paragraph{Minimizing False Negatives}
 They use a method called Active Overflowed Scheme, which utilizes the property of the locality sensitive hashing algorithms that proximate elements will be stored close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
 
-\section{Theory} % Dette afsnit skal nok hedde noget andet
-
-%valg af T, k, m', n', n
-  %pulje af hashfunktioner (seed til random generator)
-  %beregn true/false positives og true/false negatives
-%find epsilon og sigma fra ovenstående
-%diskutér false positives (sandsynlighed)
-%diskutér false negatives (kan de elimineres?)
-
-
-
-\section{Experiments}
-\begin{figure}[H]
-\centering
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{FPR1}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{FNR1}
-\end{subfigure}
-\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0.1, and $\sigma$ = 0.4}
-\label{fig:n1000}
-\end{figure}
-\begin{figure}[H]
-\centering
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{FPR2}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.8\linewidth]{FNR2}
-\end{subfigure}
-\caption{The observed false positive and false negative rates for $n$ = 10000, $l$ = 65536, $\epsilon$ = 0.05, and $\sigma$ = 0.4}
-\label{fig:n10000}
-\end{figure}
-
-%tegn nogle grafer
-
-% Forsøg at finde variable eksperimentelt
-% Forsøg at variér closeness/farness i kandidater og tegn FP og FN-rate som funktion af disse
-
-
-\section{Conclusion}
-\subsection{Suggested Improvements}
-
-\newpage
-
 \begin{thebibliography}{}
 
 \bibitem{paper:harvard}
-Adam Kirsch, Michael Mitzenmacher
-Distance-Sensitive Bloom Filters
+A. Kirsch and M. Mitzenmacher, "Distance-Sensitive Bloom Filters", Proc. Eighth Workshop Algorithm Eng. and Experiments (ALENEX), 2006.
 
 \bibitem{paper:bloom}
-Flavio Bonomi, Michael Mitzenmacher, Rina Panigrahy, Sushil Singh, and George Varghese
-An Improved Construction for Counting Bloom Filters
+Bonomi, Flavio and Mitzenmacher, Michael and Panigrahy, Rina and Singh, Sushil and Varghese, George, "An Improved Construction for Counting Bloom Filters", Algorithms – ESA 2006 
 
-      %Sådan her ref'er man en URL
-      %\bibitem{lit:json}
-      %\url{http://tools.ietf.org/html/rfc4627}
-      %Retrieved: 2013-05-02
+\bibitem{paper:hua}
+Yu Hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng, "Locality-Sensitive Bloom Filter for Approximate Membership Query", IEEE TRANSACTIONS ON COMPUTERS, VOL. 61, NO. 6, 2012
+ 
 \end{thebibliography}
-
-%code in appendix
-\section*{Appendix}
-%\lstinputlisting[language=Python]{../tools/size_estimator.py}
-
 
 \end{document}
