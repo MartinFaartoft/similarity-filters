@@ -16,6 +16,7 @@ class DistanceSensitiveBloomFilter:
 		random.seed(self.seed)
 
 		self.prepare_bits_to_sample()
+		#self.naive_prepare_bits_to_sample()
 		self.hash_functions = self.prepare_hash_functions(k, m) #make k of these
 
 		for i in range(k):
@@ -46,6 +47,18 @@ class DistanceSensitiveBloomFilter:
 					continue
 				bucket_of_bits_to_sample.append(chunk)
 		self.bucket_of_bits_to_sample = bucket_of_bits_to_sample
+
+	def naive_prepare_bits_to_sample(self):
+		l_prime = self.l_prime
+		bits = range(self.length)
+		bucket_of_bits_to_sample = []
+		while len(bucket_of_bits_to_sample) < self.k:
+			random.shuffle(bits)
+			chunk = bits[:l_prime]
+			bucket_of_bits_to_sample.append(chunk)
+
+		self.bucket_of_bits_to_sample = bucket_of_bits_to_sample
+
 
 	#counts number of 'turned on' bits in the filter, looking only at positions
 	#that 'element' hashes to
