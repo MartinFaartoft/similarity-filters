@@ -138,21 +138,21 @@ Another way to go around this is by sacrificing time. This can be done by still 
 \section{Related work} % Ideer fra related works
 
 \subsection{Distance-Sensitive Bloom Filters}
-Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. The aim is to expand upon classical Bloom filters, enabling them to answer the question: "Does a set contain an element similar to a given element?". They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
+Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. They aim to expand upon classical Bloom filters, enabling them to answer the question: "Does a set contain an element similar to a given element?". They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
 
-The way they accomplish this is by using locality sensitive hashing algorithms (TODO REF), such that two elements that are sufficiently similar will, with a high probability, hash to the same value. They also use a partitioned Bloom filter, which is a like a standard Bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
+The way they accomplish this is by using locality sensitive hashing algorithms, such that two elements that are sufficiently similar will, with a high probability, hash to the same value. They also use a partitioned Bloom filter, which is a like a standard Bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
 
 When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold (T), that is set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false positives using this data structure.
 
 A disadvantage to this approach, compared to a classical Bloom filter, is that it introduces the possibility of false negatives.
 
+% Langt fra sikker på hvor specifikt det skal være. Det her lyder MEGET vagt, men ved ikke om det giver mening at give præcise angivelser.
+In their article they perform 2 experiments, varying different factors, both showing that the more space used gives fewer false positives and false negatives. The "false positive/size" and "false negative/size" ratios they achieve, although not impressive, Kirsch and Mitzenmacher note that the ratios can not be improved unless they take into account special properties of the elements in the filter.
+
 % Hvordan adskiller det sig fra normal bloom filters, hvor du har et threshold, t
 
-
-
-
-\subsection{Kinesere}
-The paper written by [TODO] takes a different approach than [TODO ref mitz]. They use a standard Bloom Filter data structure, but with LSH in place of ordinary hash functions - they call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both False Positives and False Negatives, so they augment this with additional data structures.
+\subsection{Locality-Sensitive Bloom Filter for Approximate Membership Query"}
+The paper written by Hua et al. takes a different approach than in \cite{paper:hua}. They use a standard Bloom Filter data structure, but with LSH in place of ordinary hash functions - they call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both false positives and false negatives, so they augment this with additional data structures.
 
 \paragraph{Minimizing False Positives}
 Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things.
@@ -170,11 +170,15 @@ Now when the LSBF is queried, it first verifies that all bits corresponding to t
 \label{fig:verification_scheme}
 \end{figure}
 
-
 Note that the VS is a standard Bloom filter, and therefor allows false positives itself. That means it only serves to minimized false positives, not outright remove them.
+
+By using VS they have decreased the false positive rate by a factor of $(0.6185)\exp{m'/n}$, where $m'$ is the number of bits sampled, and $n$ is the number of elements in the LSBF.
 
 \paragraph{Minimizing False Negatives}
 They use a method called Active Overflowed Scheme, which utilizes the property of the locality sensitive hashing algorithms that proximate elements will be stored close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
+
+% Jeg kan ikke finde ud af om man bare skal smide hele den lange ligning ind. Synes ikke det egner sig til en præsentation.
+They have analyzed that with $t = 1$ the use of this technique 
 
 \begin{thebibliography}{}
 
