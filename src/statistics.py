@@ -94,22 +94,38 @@ def calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidat
     return (tpr, fnr, fpr, tnr)
 
 def pagh_graph():
-    dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, length)
-    candidate = randBinList(length)
-    dsbf.add_element(candidate)
-    populate_dsbf(dsbf, number_of_elements - 1, length)
-    count_true = 0
-    k_true_list = []
-    for close_element in generate_close_candidates(candidate, closeness, number_of_candidates):
-        k_true_list.append(dsbf.count_number_of_true_values(close_element))
+    epsilon = 0.1
+    delta = 0.4
+    l = 65536
+    n = 1000
+    number_of_candidates = 1000
+    closeness = int(math.floor(l * epsilon))
+    farness = int(math.floor(l * delta))
+    final_list = []
+    for step_k in range(1,50):
 
-    k_true_list.sort()
+        print step_k
+        epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_harvard_params(epsilon=epsilon, delta=delta, l=l, k=step_k, n=n)
+
+        dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l)
+        candidate = randBinList(l)
+        dsbf.add_element(candidate)
+        populate_dsbf(dsbf, n - 1, l)
+        count_true = 0
+        k_true_list = []
+
+        for close_element in generate_close_candidates(candidate, 0, closeness, number_of_candidates):
+            k_true_list.append(dsbf.count_number_of_true_values(close_element))
+
+        k_true_list.sort()
+
+        final_list.append(k_true_list)
 
     import json
-    print json.dumps(k_true_list)
+    print json.dumps(final_list)
 
 def harvard_graph():
-    epsilon = 0.05
+    epsilon = 0.01
     delta = 0.4
     l = 65536
     n = 10000
@@ -140,8 +156,8 @@ def harvard_graph():
 
 
 
-#pagh_graph()
+pagh_graph()
 #run()
-harvard_graph()
+#harvard_graph()
 
 #def __init__(self, k, m, bits_to_sample, prime, seed):
