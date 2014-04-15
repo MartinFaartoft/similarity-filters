@@ -37,6 +37,21 @@ def calculate_harvard_params(epsilon, delta, l, k, n):
 
     return epsilon, delta, l, k, n, l_prime, m_prime, threshold
 
+def calculate_params_eliminate_false_negatives(epsilon, delta, l, k, n):
+    print "epsilon, delta, l, k, n", epsilon, delta, l, k, n
+
+    epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_harvard_params(epsilon, delta, l, k, n)
+    print "epsilon, delta, l, k, n, l_prime, m_prime, threshold ", epsilon, delta, l, k, n, l_prime, m_prime, threshold
+
+    """ epsilon_abs = absolute allowed hamming distance """
+    epsilon_abs = math.ceil(l * float(epsilon))
+    """ ln = The maximum number of times some bit in the element can be sampled """
+    ln = math.ceil(k*l_prime / float(l))
+    threshold = k - ln * epsilon_abs
+    print "threshold=",threshold,"ln=",ln,"epsilon_abs",epsilon_abs
+    assert(threshold > 0)
+    return epsilon, delta, l, k, n, l_prime, m_prime, threshold
+
 
 def generate_close_candidates(candidate, min_distance, max_distance, number_of_candidates):
     """ candidate = candidate bit array
@@ -127,7 +142,7 @@ def pagh_graph():
 def harvard_graph():
     epsilon = 0.01
     delta = 0.4
-    l = 65536
+    l = 100
     n = 10000
     number_of_candidates = 1000
 
@@ -149,15 +164,33 @@ def harvard_graph():
     with open('harvard_graph.json', 'w') as outfile:
         json.dump(data, outfile)
 
+def eliminate_false_negatives_experiment():
+    epsilon = 0.001
+    delta = 0.4
+    l = 10000
+    n = 1000
+    number_of_candidates = 1000
+    step_k = 100
+
+    closeness = int(math.floor(l * epsilon))
+    farness = int(math.floor(l * delta))
+
+    epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_params_eliminate_false_negatives(epsilon=epsilon, delta=delta, l=l, k=step_k, n=n)
+    dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
+
+    data_row = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates)
+    tpr, fnr, fpr, tnr = data_row
+    assert(fnr == 0.0)
+    print data_row
+    # import json
+
+    # with open('eliminate_false_negatives_experiment.json', 'w') as outfile:
+    #     json.dump(data_row, outfile)
 
 
 
-
-
-
-
-pagh_graph()
+#pagh_graph()
 #run()
 #harvard_graph()
-
+eliminate_false_negatives_experiment()
 #def __init__(self, k, m, bits_to_sample, prime, seed):
