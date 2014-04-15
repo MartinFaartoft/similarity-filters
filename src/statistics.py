@@ -37,6 +37,14 @@ def calculate_harvard_params(epsilon, delta, l, k, n):
 
     return epsilon, delta, l, k, n, l_prime, m_prime, threshold
 
+def calculate_params_eliminate_false_negatives(epsilon, delta, l, k, n):
+    epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_harvard_params(epsilon, delta, l, k, n)
+    """ epsilon_abs = absolute allowed hamming distance """
+    epsilon_abs = math.ceil(l / float(l_prime))
+    ln = math.ceil(k*l_prime / float(l))
+    threshold = k - ln * e_abs
+    return epsilon, delta, l, k, n, l_prime, m_prime, threshold
+
 
 def generate_close_candidates(candidate, min_distance, max_distance, number_of_candidates):
     """ candidate = candidate bit array
