@@ -41,8 +41,10 @@ def calculate_params_eliminate_false_negatives(epsilon, delta, l, k, n):
     epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_harvard_params(epsilon, delta, l, k, n)
     """ epsilon_abs = absolute allowed hamming distance """
     epsilon_abs = math.ceil(l / float(l_prime))
+    """ ln = The maximum number of times some bit in the element can be sampled """
     ln = math.ceil(k*l_prime / float(l))
-    threshold = k - ln * e_abs
+    threshold = k - ln * epsilon_abs
+    assert(threshold > 0)
     return epsilon, delta, l, k, n, l_prime, m_prime, threshold
 
 
@@ -157,7 +159,7 @@ def harvard_graph():
     with open('harvard_graph.json', 'w') as outfile:
         json.dump(data, outfile)
 
-
+calculate_params_eliminate_false_negatives(epsilon=0.1, delta=0.4, l=6565365, k=10, n=1000)
 
 
 
