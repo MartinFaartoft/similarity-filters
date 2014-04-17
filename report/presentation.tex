@@ -139,6 +139,7 @@ Another way to go around this is by sacrificing time. This can be done by still 
 
 \subsection{Distance-Sensitive Bloom Filters}
 To be able to perform non-exact matching in Bloom filters Kirsch and Mitzenmacher propse, in \cite{paper:harvard}, a novel way of using Bloom filters. They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
+
 % Why locality sensitive hashing? Is that an extra bonus?
 They accomplish this by using locality sensitive hashing functions and by using a threshold value. The idea is that in a standard Bloom filter an element is only set to be in the Bloom filter if all the hash functions map to a bit that has been set. Their twist is to only check if a certain amount of the bits, $t$, has been set. If enough bits have been set, the data structure returns that the queries element is close enough.
 
@@ -146,17 +147,19 @@ They accomplish this by using locality sensitive hashing functions and by using 
 
 %When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold (T), that is set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false positives using this data structure.
 
-A disadvantage to this approach, compared to a classical Bloom filter, is that it introduces the possibility of false negatives.
-
-\todo{indsæt nogle af deres resultater, der kan sammenlignes med Hua et al}
+A disadvantage to this approach, compared to a classical Bloom filter, is that it introduces the possibility of false negatives, and they maintain a zone in which they can not make any guarantees. This zone can be adjusted by parameters, but will impact the size of the Bloom filter.
 
 % Langt fra sikker på hvor specifikt det skal være. Det her lyder MEGET vagt, men ved ikke om det giver mening at give præcise angivelser.
-In their article they perform 2 experiments, varying different factors, both showing that the more space used gives fewer false positives and false negatives. The "false positive/size" and "false negative/size" ratios they achieve, although not impressive, Kirsch and Mitzenmacher note that the ratios can not be improved unless they take into account special properties of the elements in the filter.
+%In their article they perform 2 experiments, varying different factors, both showing that the more space used gives fewer false positives and false negatives. The "false positive/size" and "false negative/size" ratios they achieve, although not impressive, Kirsch and Mitzenmacher note that the ratios can not be improved unless they take into account special properties of the elements in the filter.
+In their experiments they manage to achieve false postive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, and 0.016\% and 0.003\% for 1000. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space. The space difference is due to differences in the zone with no guarantees. % Ikke sikker på hvor meget bånedet skal specificeres. Det er ikke nævnt andre steder.
 
 % Hvordan adskiller det sig fra normal bloom filters, hvor du har et threshold, t
 
 \subsection{"Locality-Sensitive Bloom Filter for Approximate Membership Query"}
-The paper written by Hua et al.\cite{paper:hua}, takes a different approach than \cite{paper:harvard}. They use a standard Bloom Filter data structure, but with LSH functions in place of ordinary hash functions. They call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both false positives and false negatives. To minimize these, they augment the Bloom filter with clever, additional data structures, that we will not discuss at length. The result is \todo{indsæt nogle af deres resultater, der kan sammenlignes med Harvards}
+The paper written by Hua et al.\cite{paper:hua}, takes a different approach than \cite{paper:harvard}. They use a standard Bloom Filter data structure, but with LSH functions in place of ordinary hash functions. They call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both false positives and false negatives. To minimize these, they augment the Bloom filter with clever, additional data structures, that we will not discuss at length.
+
+In the report they have chosen to use a 'proximity measure', which makes it impossible to compare the results to the ones found in \cite{paper:harvard} directly and all data presented is only available through graphs. From the graphs, however, we can see that they achieve between 85\% and 100\% accuracy.
+% Helt ærlig, hvordan fanden skal det lort læses?
 
 \paragraph{Minimizing False Positives}
 Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things.
