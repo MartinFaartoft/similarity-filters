@@ -138,11 +138,13 @@ Another way to go around this is by sacrificing time. This can be done by still 
 \section{Related work} % Ideer fra related works
 
 \subsection{Distance-Sensitive Bloom Filters}
-Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. They aim to expand upon classical Bloom filters, enabling them to answer the question: "Does a set contain an element similar to a given element?". They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
+To be able to perform non-exact matching in Bloom filters Kirsch and Mitzenmacher propse, in \cite{paper:harvard}, a novel way of using Bloom filters. They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
+% Why locality sensitive hashing? Is that an extra bonus?
+They accomplish this by using locality sensitive hashing functions and by using a threshold value. The idea is that in a standard Bloom filter an element is only set to be in the Bloom filter if all the hash functions map to a bit that has been set. Their twist is to only check if a certain amount of the bits, $t$, has been set. If enough bits have been set, the data structure returns that the queries element is close enough.
 
-The way they accomplish this is by using locality sensitive hashing algorithms, such that two elements that are sufficiently similar will, with a high probability, hash to the same value. They also use a partitioned Bloom filter, which is a like a standard Bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
+%The way they accomplish this is by using locality sensitive hashing algorithms, such that two elements that are sufficiently similar will, with a high probability, hash to the same value. They also use a partitioned Bloom filter, which is a like a standard Bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
 
-When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold (T), that is set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false positives using this data structure.
+%When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold (T), that is set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false positives using this data structure.
 
 A disadvantage to this approach, compared to a classical Bloom filter, is that it introduces the possibility of false negatives.
 
