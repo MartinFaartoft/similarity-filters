@@ -77,13 +77,13 @@
 \setcounter{page}{1}
 
 \section{Introduction}
-In the following we investigate the Similarity Search problem. Different approaches have been explored by earlier work, and in this report we will investigate two of those; 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} by Kirsch and Mitzenmacher, and 'Locality-Sensitive Bloom Filter for Approximate Membership Query'\cite{paper:hua} by Hua et al.
+In the following we investigate the Similarity Search problem. Different approaches have been explored by earlier work, and in this paper we will investigate two of those; 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} by Kirsch and Mitzenmacher, and 'Locality-Sensitive Bloom Filter for Approximate Membership Query'\cite{paper:hua} by Hua et al.
 
 \subsection{The Problem}
 The Similarity Search problem can be stated as follows: Given a set of elements $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$ using a certain metric.
 
 % Begræns problemet
-In the following we consider the Similarity Search problem for bit-vectors of length $l$, and Hamming distance as metric. This reduction maintains a high degree of generality, since elements from many domains can be encoded as bit-vectors.
+In the following we consider the Similarity Search problem for bit-vectors of length $l$, and Hamming distance as metric. This reduction maintains a high degree of generality, since many domains can be encoded with bit-vectors.
 
 \subsection{Definitions}
 \begin{description}
@@ -104,94 +104,64 @@ Regular hashing tries to spread out the hash-values of different elements, to mi
 
 The LSH is closely tied to the distance metric, and many distance metrics have no known LSH. The Hamming distance metric on bit-vectors has a particularly simple LSH: Sample a fixed number of bits from the input vector, uniformly at random. 
 
-It is intuitively obvious, that if two elements only differ on the non-sampled bits, then they will hash to the same value, and thus be considered "close" by the LSH.
+It is intuitively obvious, that if two elements only differ on the non-sampled bits, then they will hash to the same value, and thus be considered 'close' by the LSH.
 
 The more bits two vectors have in common, the higher the probability will be that a random LSH will hash them to the same value.
 
-\item \textbf{$\epsilon$-closeness}
-  \begin{itemize}
-    \item If an element $s \in S$ differs from $x$ in at most an $\epsilon$-fraction of the bits, it is said to be $\epsilon$-close to $x$. The data structure must return “close”.
-    \item If every vector $s \in S$ differs from $x$ in at least a $\delta$-fraction of the bits, then the data structure should return "not close".
-    \item In all other cases, i.e. when the distance to the nearest vector is between $\epsilon$ and $\delta$, the data structure can give any answer it likes.
-  \end{itemize}
+% \item \textbf{$\epsilon$-closeness}
+%   \begin{itemize}
+%     \item If an element $s \in S$ differs from $x$ in at most an $\epsilon$-fraction of the bits, it is said to be $\epsilon$-close to $x$. The data structure must return “close”.
+%     \item If every vector $s \in S$ differs from $x$ in at least a $\delta$-fraction of the bits, then the data structure should return 'not close'.
+%     \item In all other cases, i.e. when the distance to the nearest vector is between $\epsilon$ and $\delta$, the data structure can give any answer it likes.
+%   \end{itemize}
 
 \end{description}
 
 \subsection{Naïve Approaches}
 
 \paragraph{Brute force}
-The most obvious idea for solving the Similarity Search problem, is brute force. Store the elements $S$ in a linked list. When a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
+The most obvious idea for solving the Similarity Search problem, is by brute force. Store the elements $S$ in a linked list. When a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
 
 This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
 
-\paragraph{Bloom filters} TODO: If we allow false positives, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both. (her skal der stå noget om: 1 query / $n\cdot d^k$ inserts ELLER 1 insert, $n \cdot d^k$ queries)
+\paragraph{Bloom filters} If we relax the requirements, to allow false positives, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both. 
 
-If we want to be able to tell if there is an element in the bloom filter which is at most $d$ different from the element we query with, we have two options: One sacrificing space and the other sacrificing time. While keeping in mind that standard Bloom filters only answers exact membership, we see that one way of achieving this is by relying on extra insertions. This means that everytime an element is about to be added to the Bloom filter, all elements within distance $d$ is added in addition to the original element. This approach requires a lot more space depending on the [Universe], if we do not want the accuracy of the Bloom filter to be reduced too much. It does however still guarantee a fast response time\\
+While keeping in mind that standard Bloom filters only answer exact membership, we see that one way of achieving this is by relying on extra insertions. Everytime an element is added to the Bloom filter, all elements within distance $d$ are generated and added in addition to the original element. 
 
-Another way to go around this is by sacrificing time. This can be done by still doing normal insertions but instead querying for all elements with distance $d$ of the element we are comparing to. This approach has the benefit of still being space efficient but will cost on the running time.
-
-
-%     False Negatives (skal det være her?)
-
-
+Another way to go around this is by sacrificing time. This can be done by still doing normal insertions but instead querying for all elements with distance $d$ of the element we are comparing to. This approach has the benefit of still being space efficient but will cause an exponential blowup of the running time.
 
 \section{Related work} % Ideer fra related works
 
 \subsection{Distance-Sensitive Bloom Filters}
-To be able to perform non-exact matching in Bloom filters Kirsch and Mitzenmacher propse, in \cite{paper:harvard}, a novel way of using Bloom filters. They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
+To be able to perform non-exact matching in Bloom filters, Kirsch and Mitzenmacher propose, in \cite{paper:harvard}, a novel way of using Bloom filters. They replace the ordinary hash functions with LSH hash functions. When a query is received, they ask all the hash functions if they have seen something similar to this element, and if more than a certain threshold, $t$ returns true, then the data structure returns true, meaning that a similar element was found in the data structure.
 
-% Why locality sensitive hashing? Is that an extra bonus?
-They accomplish this by using locality sensitive hashing functions and by using a threshold value. The idea is that in a standard Bloom filter an element is only set to be in the Bloom filter if all the hash functions map to a bit that has been set. Their twist is to only check if a certain amount of the bits, $t$, has been set. If enough bits have been set, the data structure returns that the queries element is close enough.
-
-%The way they accomplish this is by using locality sensitive hashing algorithms, such that two elements that are sufficiently similar will, with a high probability, hash to the same value. They also use a partitioned Bloom filter, which is a like a standard Bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
-
-%When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold (T), that is set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false positives using this data structure.
-
-A disadvantage to this approach, compared to a classical Bloom filter, is that it introduces the possibility of false negatives, and they maintain a zone in which they can not make any guarantees. This zone can be adjusted by parameters, but will impact the size of the Bloom filter.
+The main disadvantage to this approach, is that it introduces the possibility of false negatives. 
 
 % Langt fra sikker på hvor specifikt det skal være. Det her lyder MEGET vagt, men ved ikke om det giver mening at give præcise angivelser.
 %In their article they perform 2 experiments, varying different factors, both showing that the more space used gives fewer false positives and false negatives. The "false positive/size" and "false negative/size" ratios they achieve, although not impressive, Kirsch and Mitzenmacher note that the ratios can not be improved unless they take into account special properties of the elements in the filter.
-In their experiments they manage to achieve false postive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, and 0.016\% and 0.003\% for 1000. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space. The space difference is due to differences in the zone with no guarantees. % Ikke sikker på hvor meget bånedet skal specificeres. Det er ikke nævnt andre steder.
-
+In their experiments they manage to achieve false postive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, and 0.016\% and 0.003\% for 1000. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space.
 % Hvordan adskiller det sig fra normal bloom filters, hvor du har et threshold, t
 
 \subsection{"Locality-Sensitive Bloom Filter for Approximate Membership Query"}
-The paper written by Hua et al.\cite{paper:hua}, takes a different approach than \cite{paper:harvard}. They use a standard Bloom Filter data structure, but with LSH functions in place of ordinary hash functions. They call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both false positives and false negatives. To minimize these, they augment the Bloom filter with clever, additional data structures, that we will not discuss at length.
+The paper written by Hua et al.\cite{paper:hua}, takes a slightly different approach than \cite{paper:harvard}. They use a standard Bloom Filter data structure, with LSH functions in place of ordinary hash functions, but no thresholding. They call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both false positives and false negatives. To minimize these, they augment the Bloom filter with additional data structures, that will not be discussed further here.
 
 In the report they have chosen to use a 'proximity measure', which makes it impossible to compare the results to the ones found in \cite{paper:harvard} directly and all data presented is only available through graphs. From the graphs, however, we can see that they achieve between 85\% and 100\% accuracy.
 % Helt ærlig, hvordan fanden skal det lort læses?
 
-\paragraph{Minimizing False Positives}
-Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things.
-1) An element $p$ exists in the LSBF, that is approximately close to $q$ (a true positive)
-2) Multiple elements added to the LSBF, together, have conspired to set the all the bit positions corresponding to $q$ to $1$, and no single element is approximately close to $q$. (a false positive).
+\section{Ideas and Preliminary Results}
+We have mainly been focused on the 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} paper, and have achieved the following:
+\\
 
-To minimize the probability of a FP, a Verification Scheme (VS) data structure is added.
-This is a standard Bloom filter (ordinary hashing, not LSH), and is maintained as follows: Every time an element is added to the LSBF, the bit positions that corresponds to that element, are encoded (see figure \ref{fig:verification_scheme}) and inserted into the VS Bloom filter. 
-Now when the LSBF is queried, it first verifies that all bits corresponding to the query element $q$ are set to $1$ in the LSBF, and then encodes the bit positions (figure \ref{fig:verification_scheme}), and queries the VS for an exact match. If an exact match for the encoded version of $q$ is found in VS, then it is highly likely that a single element $p$ is responsible for setting all the bits in the LSBF, and the query will return a 'yes'. If, on the other hand, the VS does not contain an element that matches the encoded $q$, then multiple elements must be responsible for the bits being set, and the query will return 'no', effectively catching a false positive. 
+We have implemented the data-structure, and can roughly reproduce their results.
+\\
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=.5\linewidth]{verification_scheme}
-\caption{Maintaining the Verification Scheme, when adding elements to an LSBF}
-\label{fig:verification_scheme}
-\end{figure}
+We suggest a small improvement to the way the LSH functions choose what bits to sample. If we force each bit to be sampled the same number of times, we make the thresholding more robust against 'unfortunate' choices of bits to sample. 
+\\
 
-Note that the VS is a standard Bloom filter, and therefore allows false positives itself. That means it only serves to minimize false positives, not outright remove them.
+Building on the previous idea, we suggest a way to eliminate false negatives completely: If every bit is only sampled a fixed number of times $n$, and a query element $q$ is 'close', meaning it only differs from s in at most $\epsilon$ bits, then setting the threshold to: $t = k - n \cdot \epsilon$ will eliminate false negatives. The downside is an increase in the number of false positives, and the fact that the data structure no longer works for some parameter settings ($t < 1$).
+\\
 
-By using VS they have decreased the false positive rate by a factor of $(0.6185)\exp{m'/n}$, where $m'$ is the number of bits sampled, and $n$ is the number of elements in the LSBF.
-
-\paragraph{Minimizing False Negatives}
-They use a method called Active Overflowed Scheme, which utilizes the property of the locality sensitive hashing algorithms that proximate elements will be stored close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
-
-% Jeg kan ikke finde ud af om man bare skal smide hele den lange ligning ind. Synes ikke det egner sig til en præsentation.
-They have analyzed that with $t = 1$ the use of this technique 
-
-\section{Preliminary Results and Ideas}
-%sample hver bit lige mange gange
-%fjern false negatives fra mitzenmacher
-%separating positives and negatives (trappe-graf)
-%reproduction of Mitzenmacher results
+Finally we aim to experimentally investigate if the choice of threshold in \cite{paper:harvard} can be improved.
 
 \begin{thebibliography}{}
 
