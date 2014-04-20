@@ -124,7 +124,7 @@ The most obvious idea for solving the Similarity Search problem, is by brute for
 
 This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
 
-\paragraph{Bloom filters} If we relax the requirements, to allow false positives, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both. 
+\paragraph{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both. 
 
 While keeping in mind that standard Bloom filters only answer exact membership, we see that one way of achieving this is by relying on extra insertions. Everytime an element is added to the Bloom filter, all elements within distance $d$ are generated and added in addition to the original element. 
 
