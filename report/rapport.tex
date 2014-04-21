@@ -222,7 +222,14 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 
 \section{Conclusion}
 \subsection{Suggested Improvements}
+\paragraph{Balanced LSH Bit Sampling} 
+The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l^{'}$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the k hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false answers.
+\\
+This can be remedied, by initializing the LSHs such that all bit positions are sampled equally often.
+In practice we do this by first preparing a vector of length $k \cdot l^{'}$ by repeating the the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l^{'}$, making sure that every index in the sub-vector is unique. This preprocessing step takes $O(l)$ time, and protects the DSBF from poor performance due to skewed sampling.
 
+Figure TODO shows an experiment run with Balanced bit sampling enabled (TODO some color) and disabled (TODO some other color), and shows that this optimization in some cases improves the performance of the DSBF, but never degrades it. 
+\todo{produce and insert graphs here}
 \newpage
 
 \begin{thebibliography}{}
