@@ -26,6 +26,8 @@
 \usepackage[T1]{fontenc} % use for allowing < and > in cleartext
 \usepackage{fixltx2e}    % use for textsubscript
 \usepackage[linesnumbered,boxed,ruled]{algorithm2e}
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 % \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
 \newcommand{\BigO}[1]{\ensuremath{\mathop{}\mathopen{}\mathcal{O}\mathopen{}\left(#1\right)}}
 
@@ -219,10 +221,8 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 % Forsøg at finde variable eksperimentelt
 % Forsøg at variér closeness/farness i kandidater og tegn FP og FN-rate som funktion af disse
 
-
-\section{Conclusion}
-\subsection{Suggested Improvements}
-\paragraph{Balanced LSH Bit Sampling} 
+\section{Suggested Improvements}
+\subsection{Balanced LSH Bit Sampling} \label{sec:balanced}
 The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l^{'}$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the k hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false answers.
 \\
 This can be remedied, by initializing the LSHs such that all bit positions are sampled equally often.
@@ -230,6 +230,18 @@ In practice we do this by first preparing a vector of length $k \cdot l^{'}$ by 
 
 Figure TODO shows an experiment run with Balanced bit sampling enabled (TODO some color) and disabled (TODO some other color), and shows that this optimization in some cases improves the performance of the DSBF, but never degrades it. 
 \todo{produce and insert graphs here}
+
+\subsection{Eliminating False Negatives}
+Building on the previous idea from \ref{sec:balanced}, we suggest a way to eliminate false negatives from the DSBF data-structure.
+
+\paragraph{False Negatives} \label{p:fn}happen when a query element is within distance $\epsilon$ of an element in S, but is reported as being 'not close'. This happens when too many of the $k$ LSH functions report false, driving the number of trues below the threshold $t$. We know that each of the LSHs that report false, will sample at least one bit in which $q$ and every element $s \in S$ differ. Since q, by definition, is 'close' to some element $s \in S$, the maximum number of differences between $q$ and the closest element in $S$ is: $\epsilon_{abs} = \ceil{\epsilon \cdot l}$, where $l$ is the element length. Assuming that each is sampled an equal number of times (ensured by \ref{sec:balanced})): $l_n = \ceil{\frac{k \cdot l{'}}{l}}$, the maximum number of hash-functions that can report false is: $n_{false} = e_{abs} \cdot l_n$.
+
+\paragraph{Providing a guarantee} against false negatives can be achieved by lowering the DSBF threshold appropriately. Armed with the knowledge of $n_{false}$ from \ref{p:fn}, we can set $t = k - n_{false}$, and thereby eliminate the possibility of false negatives completely.
+
+%drawbacks
+
+
+\section{Conclusion}
 \newpage
 
 \begin{thebibliography}{}
