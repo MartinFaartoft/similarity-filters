@@ -35,22 +35,32 @@ def calculate_harvard_params(epsilon, delta, l, k, n):
     m_prime = 2 ** l_prime
     threshold = (k * ((1 - c * epsilon) ** l_prime)) / 2
 
-    return epsilon, delta, l, k, n, l_prime, m_prime, threshold
+    space = m_prime*k
+    total_input_size = n*l
+    fraction = space / float(total_input_size)
 
-def calculate_params_eliminate_false_negatives(epsilon, delta, l, k, n):
-    print "epsilon, delta, l, k, n", epsilon, delta, l, k, n
+    return epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction
 
-    epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_harvard_params(epsilon, delta, l, k, n)
-    print "epsilon, delta, l, k, n, l_prime, m_prime, threshold ", epsilon, delta, l, k, n, l_prime, m_prime, threshold
+def calculate_params_eliminate_false_negatives(epsilon, delta, l, k, n, l_prime):
+
+    epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction = calculate_harvard_params(epsilon, delta, l, k, n)
+    m_prime = 2 ** l_prime #2**l_prime #override harvard m_prime
+    #print "epsilon, delta, l, k, n, l_prime, m_prime, threshold ", epsilon, delta, l, k, n, l_prime, m_prime, threshold
+    print "space=", m_prime*k, "total input size=", n*l, "fraction=", m_prime*k / float(n*l)
+    space = m_prime*k
+    total_input_size = n*l
+    fraction = space / float(total_input_size)
 
     """ epsilon_abs = absolute allowed hamming distance """
     epsilon_abs = math.ceil(l * float(epsilon))
     """ ln = The maximum number of times some bit in the element can be sampled """
     ln = math.ceil(k*l_prime / float(l))
     threshold = k - ln * epsilon_abs
-    print "threshold=",threshold,"ln=",ln,"epsilon_abs",epsilon_abs
-    assert(threshold > 0)
-    return epsilon, delta, l, k, n, l_prime, m_prime, threshold
+    #print "threshold=",threshold,"ln=",ln,"epsilon_abs",epsilon_abs
+    if (threshold <= 0):
+        print "WAAARNNIINNGGG"
+        #assert(threshold > 0)
+    return epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction
 
 
 def generate_close_candidates(candidate, min_distance, max_distance, number_of_candidates):
@@ -165,27 +175,37 @@ def harvard_graph():
         json.dump(data, outfile)
 
 def eliminate_false_negatives_experiment():
-    epsilon = 0.001
+    epsilon = 0.05
     delta = 0.4
-    l = 10000
+    l = 24000
     n = 1000
     number_of_candidates = 1000
-    step_k = 100
+    #step_k = 25
+    l_prime = 11
+    data_collection = []
 
     closeness = int(math.floor(l * epsilon))
     farness = int(math.floor(l * delta))
+    for step_k in range(11, 75, 1):
+        epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction = calculate_params_eliminate_false_negatives(epsilon=epsilon, delta=delta, l=l, k=step_k, n=n, l_prime=l_prime)
+        #epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction = calculate_harvard_params(epsilon=epsilon, delta=delta, l=l, k=step_k, n=n)
 
-    epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_params_eliminate_false_negatives(epsilon=epsilon, delta=delta, l=l, k=step_k, n=n)
-    dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
+        dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
 
-    data_row = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates)
-    tpr, fnr, fpr, tnr = data_row
-    assert(fnr == 0.0)
-    print data_row
-    # import json
+        data_row = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates)
 
-    # with open('eliminate_false_negatives_experiment.json', 'w') as outfile:
-    #     json.dump(data_row, outfile)
+        tpr, fnr, fpr, tnr = data_row
+        new_data = (step_k, tpr, fnr, fpr, tnr, space)
+        print step_k
+        print "tpr, fnr, fpr, tnr"
+        #assert(fnr == 0.0)
+        print new_data
+        data_collection.append(new_data)
+
+    import json
+
+    with open('eliminate_false_negatives_experiment.json', 'w') as outfile:
+        json.dump(data_collection, outfile)
 
 
 
