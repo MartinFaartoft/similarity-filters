@@ -85,7 +85,7 @@ The abstract goes here
 \newpage
 
 \section{Introduction}
-In the following we investigate the Similarity Search problem. Different approaches have been explored by earlier work, and in this report we will investigate XX and YY \todo{Indsæt XX og YY} and suggest improvements.
+In the following we investigate the Similarity Search problem. Different approaches have been explored by earlier work, and in this paper we will investigate two of those; 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} by Kirsch and Mitzenmacher, and 'Locality-Sensitive Bloom Filter for Approximate Membership Query'\cite{paper:hua} by Hua et al.
 
 \subsection{The Problem}
 The Similarity Search problem can be stated as follows: Given a set of elements $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$ using a certain metric.
@@ -129,7 +129,11 @@ The most obvious idea for solving the Similarity Search problem, is brute force.
 
 This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
 
-\paragraph{Bloom filters} TODO: If we allow false positives, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both. (her skal der stå noget om: 1 query / $n*d^k$ inserts ELLER 1 insert, $n*d^k$ queries)
+\paragraph{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both. 
+
+While keeping in mind that standard Bloom filters only answer exact membership, we see that one way of achieving this is by relying on extra insertions. Everytime an element is added to the Bloom filter, all elements within distance $d$ are generated and added in addition to the original element. 
+
+Another way to go around this is by sacrificing time. This can be done by still doing normal insertions but instead querying for all elements with distance $d$ of the element we are comparing to. This approach has the benefit of still being space efficient but will cause an exponential blowup of the running time.
 
 
 %     False Negatives (skal det være her?)
@@ -147,13 +151,15 @@ When querying the Bloom filter for an approximate match, the element is hashed w
 
 A disadvantage to this approach, compared to a classical Bloom filter, is that it introduces the possibility of false negatives.
 
-% Hvordan adskiller det sig fra normal bloom filters, hvor du har et threshold, t
+In their experiments they manage to achieve false postive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, and 0.016\% and 0.003\% for 1000. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space.
 
 
 
+\subsection{Locality-Sensitive Bloom Filter for Approximate Membership Query}
+The paper written by Hua et al.\cite{paper:hua}, takes a slightly different approach than \cite{paper:harvard}. They use a standard Bloom Filter data structure, with LSH functions in place of ordinary hash functions, but no thresholding. They call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both false positives and false negatives.
 
-\subsection{Kinesere}
-The paper written by [TODO] takes a different approach than [TODO ref mitz]. They use a standard Bloom Filter data structure, but with LSH in place of ordinary hash functions - they call this a 'Locality Sensitive Bloom Filter'. This 'naive' approach, has a high probability of both False Positives and False Negatives, so they augment this with additional data structures.
+% Rick: Skal nok omskrives.. Er ikke selv helt tilfreds
+In the report they have chosen to use a 'proximity measure', which makes it impossible to compare the results to the ones found in \cite{paper:harvard} directly and all data presented is only available through graphs. From the graphs, however, we can see that they achieve between 85\% and 100\% accuracy.
 
 \paragraph{Minimizing False Positives}
 Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things.
