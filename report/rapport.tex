@@ -228,6 +228,8 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 % Forsøg at variér closeness/farness i kandidater og tegn FP og FN-rate som funktion af disse
 
 \section{Suggested Improvements}
+In the following, we present our contributions. They take the form of a series of suggested improvements and ideas for alternate usage.
+
 \subsection{Balanced LSH Bit Sampling} \label{sec:balanced}
 The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l^{'}$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the k hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false answers.
 \\
@@ -246,7 +248,28 @@ Building on the previous idea from \ref{sec:balanced}, we suggest a way to elimi
 
 Lowering $t$ comes at a price, the lower the value of $t$, the higher the probability of a false positive. In the edge case, where $t=0$, the DSBF becomes useless, answering 'close' to every query. Taking this into account, we have to constrain the value of $n_{false}$ such that $t>0$.
 \[t > 0 \leftrightarrow k > n_{false} \leftrightarrow k > \epsilon_{abs} \cdot l_n\]
-This turns out to be a big deal, $k$ is usually below 100, $l_n$ can be kept small, but not smaller than 1. Those two bound $\epsilon_{abs}$, to definitely by below 100, which in turn makes it impossible for $\epsilon$ to be a constant fraction of $l$, for increasing $l$ values.
+This turns out to be a big deal, $k$ is usually below 100, $l_n$ can be kept small, but not smaller than 1. Those two bound $\epsilon_{abs}$, to definitely be below 100, which in turn makes it impossible for $\epsilon$ to be a constant fraction of $l$, for increasing $l$ values.
+
+\subsection{Selective Insensitivity}
+The DSBF structure can, as we have seen, be used to answer questions of the form 'what elements in $S$ are "close" to $q$'. In the following, we try to use it to also answer the same question, but with the following alteration: ', ignoring differences on bit positions $b \in B$' where $B$ is a given set of bit positions, where differences should not count towards the maximum allowed distance $d$ between $q$ and all $s \in S$.
+
+\paragraph{The idea} is to ignore the output from all LSH's that sample a bit in $B$. This can be done without modifying the internals of the DSBF, or storing any extra data, but raises some new questions.
+
+\begin{itemize}
+\item How should $T$ be chosen, when the number of queried LSH's changes, based on the query?
+
+\item What happens when the LSH's that are ignored, are the only ones sampling some bit position $b^{'} \notin B$?
+
+\item Can the LSH functions choose the bits to sample in a smarter way?
+
+\end{itemize}
+
+WORK IN PROGRESS: 
+Can we simply subtract from T?\\
+
+Accidental insensitivity -> false positives\\
+
+We would like to avoid accidental insensitivity, idea: choose the bits to sample in a systematic way, such that no set of size $|B|$ can cause accidental insensitivity (might have to constrain $|B|$ to be below some threshold given by $k$ and $l_n$)
 
 \section{Conclusion}
 \newpage
@@ -256,6 +279,10 @@ This turns out to be a big deal, $k$ is usually below 100, $l_n$ can be kept sma
 \bibitem{paper:harvard}
 Adam Kirsch, Michael Mitzenmacher
 Distance-Sensitive Bloom Filters
+
+\bibitem{paper:hua}
+Yu Hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng, "Locality-Sensitive Bloom Filter for Approximate Membership Query", IEEE Transactions on Computers, Vol. 61, No. 6, 2012
+
 
 \bibitem{paper:bloom}
 Flavio Bonomi, Michael Mitzenmacher, Rina Panigrahy, Sushil Singh, and George Varghese
