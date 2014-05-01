@@ -123,6 +123,7 @@ Simply sample a number of bit positions from the input at random.
 \end{description}
 
 \subsection{Naïve Approaches}
+\label{naive_approaches}
 
 \paragraph{Brute force}
 The most obvious idea for solving the Similarity Search problem, is brute force. Store the elements $S$ in a linked list. When a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
@@ -231,10 +232,10 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 In the following, we present our contributions. They take the form of a series of suggested improvements and ideas for alternate usage.
 
 \subsection{Balanced LSH Bit Sampling} \label{sec:balanced}
-The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l^{'}$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the k hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false answers.
+The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the k hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false answers.
 \\
 This can be remedied, by initializing the LSHs such that all bit positions are sampled equally often.
-In practice we do this by first preparing a vector of length $k \cdot l^{'}$ by repeating the the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l^{'}$, making sure that every index in the sub-vector is unique. This preprocessing step takes $O(l)$ time, and protects the DSBF from poor performance due to skewed sampling.
+In practice we do this by first preparing a vector of length $k \cdot l'$ by repeating the the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l'$, making sure that every index in the sub-vector is unique. This preprocessing step takes $O(l)$ time, and protects the DSBF from poor performance due to skewed sampling.
 
 Figure TODO shows an experiment run with Balanced bit sampling enabled (TODO some color) and disabled (TODO some other color), and shows that this optimization in some cases improves the performance of the DSBF, but never degrades it. 
 \todo{produce and insert graphs here}
@@ -250,26 +251,38 @@ Lowering $t$ comes at a price, the lower the value of $t$, the higher the probab
 \[t > 0 \leftrightarrow k > n_{false} \leftrightarrow k > \epsilon_{abs} \cdot l_n\]
 This turns out to be a big deal, $k$ is usually below 100, $l_n$ can be kept small, but not smaller than 1. Those two bound $\epsilon_{abs}$, to definitely be below 100, which in turn makes it impossible for $\epsilon$ to be a constant fraction of $l$, for increasing $l$ values.
 
-\subsection{Selective Insensitivity}
-The DSBF structure can, as we have seen, be used to answer questions of the form 'what elements in $S$ are "close" to $q$'. In the following, we try to use it to also answer the same question, but with the following alteration: ', ignoring differences on bit positions $b \in B$' where $B$ is a given set of bit positions, where differences should not count towards the maximum allowed distance $d$ between $q$ and all $s \in S$.
+\subsection{Wildcard Search}
+The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". In the following. A natural extension to this, is to want to ignore certain bits in $q$, when calculating the similarity. In a real world example, \todo{Marcus work your IRL example magic here}.
 
-\paragraph{The idea} is to ignore the output from all LSH's that sample a bit in $B$. This can be done without modifying the internals of the DSBF, or storing any extra data, but raises some new questions.
+\subsubsection*{The Extended Problem} 
+The extended problem can be stated as follows:
+
+Let $W$ be a set of wildcard bit positions: $\forall w \in W (w \in \mathbb{Z}^+ \land w < l)$.\\
+Given a set of elements $S$, a query element $q$ and a set of wildcards $W$. Determine if there exists an element $s \in S$ that is 'close' to $q$, not counting differences on wildcard positions $W$. Where 'close' is defined as being within a given distance, $d$ using a given metric.
+
+\subsubsection*{Solving Wildcard Search} 
+We have identified two approaches to solving the extended problem. 
+\paragraph{The first} is to ignore the output from all LSH's that sample one or more wildcard bits. This can be done without modifying the insertion of elements into the DSBF, and without storing additional data. However, it raises some troublesome questions.
 
 \begin{itemize}
-\item How should $T$ be chosen, when the number of queried LSH's changes, based on the query?
-
-\item What happens when the LSH's that are ignored, are the only ones sampling some bit position $b^{'} \notin B$?
-
-\item Can the LSH functions choose the bits to sample in a smarter way?
-
+\item How should the threshold be chosen, when the number of ignored LSH's changes from query to query?
+\item How should the bits to sample for each LSH be chosen, to minimize the probability that the LSH's that are ignored due to wildcarding, are not the only ones sampling some bit position $p \notin W$?, accidentally ignoring $p$ when counting differences.
 \end{itemize}
 
-WORK IN PROGRESS: 
-Can we simply subtract from T?\\
+The second question intuitively seems like it will require $|W|$ to be small, in order to keep the false positive rate low. And overall, the approach seems inferior to our other idea.
 
-Accidental insensitivity -> false positives\\
+\paragraph{The second approach} is to use the idea from the naïve solution, outlined in \ref{naive_approaches} and query the DSBF structure multiple times with different permutations of $q$. As a simple example, assume that we are querying a previously constructed DSBF with the following: 
+\[q=[0,0,0,0], W=[2,3]\]
+Since the last two bits are wildcarded, we generate all possible permutations of $q$ on the wildcarded positions: 
+\[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
+We now query the DSBF with each of the permutations, and if any of them returns 'close', we report 'close' to the original query $q, W$.
 
-We would like to avoid accidental insensitivity, idea: choose the bits to sample in a systematic way, such that no set of size $|B|$ can cause accidental insensitivity (might have to constrain $|B|$ to be below some threshold given by $k$ and $l_n$)
+This requires $2^{|W|}$ queries in the worst case, meaning that the time complexity for a query with wildcards is exponential in the number of wildcarded bits$.
+
+
+
+
+
 
 \section{Conclusion}
 \newpage
