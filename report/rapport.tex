@@ -269,18 +269,18 @@ We have identified two approaches to solving the extended problem.
 \item How should the bits to sample for each LSH be chosen, to minimize the probability that the LSH's that are ignored due to wildcarding, are not the only ones sampling some bit position $p \notin W$?, accidentally ignoring $p$ when counting differences.
 \end{itemize}
 
-The second question intuitively seems like it will require $|W|$ to be small, in order to keep the false positive rate low. And overall, the approach seems inferior to our other idea.
+The second question intuitively seems like it will require $|W|$ to be small, in order to keep the false positive rate low. And overall, the approach seems inferior to the second approach.
 
-\paragraph{The second approach} is to use the idea from the naïve solution, outlined in \ref{naive_approaches} and query the DSBF structure multiple times with different versions of $q$. As a simple example, assume that we are querying a previously constructed DSBF with the following: 
-\[q=[0,0,0,0], W=[2,3]\]
-Since the last two bits are wildcarded, we generate all possible versions of $q$ on the wildcarded positions: 
+\paragraph{The second approach} is to use the idea from the naïve solution, outlined in \ref{naive_approaches} and query the DSBF structure multiple times with different variations of $q$. As a simple example, assume that we are querying a previously constructed DSBF with the following: 
+\[q=[0,0,0,0], W=\{2,3\}\]
+Since the last two bits are wildcarded, we generate all possible variations of $q$ on the wildcarded positions: 
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
-We now query the DSBF with each of the versions, and if any of them returns 'close', we report 'close' to the original query $q, W$.
+We now query the DSBF with each of the variations, and if any of them returns 'close', we report 'close' to the original query $q, W$.
 
-This requires $2^{|W|}$ queries in the worst case, and half of that in the average case, assuming we stop querying after receiving the first 'close' response. Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.
+This requires $2^{|W|}$ queries in the worst case, and half of that in the average case, assuming we stop querying after receiving the first 'close' response. Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
 
-This result is good, but we can do better if we leverage the inner workings of the DSBF, instead of treating it as a black box.
-When the DSBF is queried, it hashes the query element $q$ using $k$ different LSH functions, and checks the corresponding locations in the internal memory. Each of the $k$ LSH functions sample a different subset $l'$ out of the total $l$ bits in $q$. This means that when the DSBF is queried multiple times with different versions of $q$, some of the LSH functions will do repeated work if they do not sample any of the wildcarded bits.
+This result is reasonably good for a small number of wildcards, but we can do better if we leverage the inner workings of the DSBF, instead of treating it as a black box.
+When the DSBF is queried, it hashes the query element $q$ using $k$ different LSH functions, and checks the corresponding locations in the internal memory. Each of the $k$ LSH functions sample a different subset $l'$ out of the total $l$ bits in $q$. This means that when the DSBF is queried multiple times with different variations of $q$, some of the LSH functions will do repeated work if they do not sample any of the wildcarded bits.
 
 We wish to eliminate this repeated work. Assume again the simple example:
 \[q=[0,0,0,0], W=\{2,3\}\]
@@ -288,11 +288,11 @@ Additionally assume that the DSBF contains 3 LSH functions that sample bits as f
 \[B_{LSH_1}=\{0,1\}, B_{LSH_2}=\{1,2\}, B_{LSH_3}=\{2,3\}\]
 Instead of querying the DSBF multiple times, we push that one level down, querying each LSH (possibly) multiple times.
 $LSH_1$ receives $q$ and $W$. It calculates $B_{LSH_1} \cap W = \emptyset $, meaning that it samples none of the wildcarded bits. It then simply hashes $q$, and returns the corresponding value from memory.
-$LSH_2$ calculates $B_{LSH_2} \cap W = \{2\}$. It then generates all possible versions of $q$ on the sampled wildcard positions:
+$LSH_2$ calculates $B_{LSH_2} \cap W = \{2\}$. It then generates all possible variations of $q$ on the sampled wildcard positions:
 \[q_1=[0,0,0,0], q_2=[0,0,1,0]\]
 looks up the corresponding positions, and returns the binary 'OR' between the values.
-$LSH_3$ does the same thing, but since it samples both bits 2 and 3, it has to generate 4 versions of $q$ and 'OR' the results.
-The rest of the query is unchanged, if the number of LSH's that returned 'true' exceeds the threshold, $t$, the DSBF reports 'close'.
+$LSH_3$ does the same thing, but since it samples both bits 2 and 3, it has to generate 4 variations of $q$ and 'OR' the results.
+The rest of the query is unchanged, if the number of LSH's that returned 'true' exceeds the threshold, $t$, the DSBF reports 'close'.\\
 
 The above requires $2^{min(|W|, l')}$ queries in the worst case. 
 This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH hashes all the bits positions in $W$.
