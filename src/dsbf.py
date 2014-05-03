@@ -70,6 +70,37 @@ class DistanceSensitiveBloomFilter:
 				number_of_trues += 1
 		return number_of_trues
 
+	def count_number_of_true_with_wildcards(self, element, wildcards):
+		wildcards = set(wildcards)
+		number_of_trues = 0;
+		for i in range(self.k):
+			h = self.hash_functions[i]
+			#find intersection between wildcards and h.indices_of_bits_to_sample
+			intersection = wildcards.intersection(set(h.indices_of_bits_to_sample))
+			for version in self.make_all_versions(element, intersection):
+				if self.bit_array[i][h.hash(version)] == 1:
+					number_of_trues += 1
+					break
+		return number_of_trues
+
+	#return a list containing all the possible versions of element, where bit_positions may take any value
+	def make_all_versions(self, element, bit_positions):
+		if len(bit_positions) == 0:
+			return [element]
+
+		for i in range(2 ** len(bit_positions)):
+			version = list(element) #make a copy that is ready for bit flipping
+			bit_string = bin(i)[2:][::-1] #peeling off '0b' and reversing the string (to conserve prepended zero), result is a string e.g. '1101'
+			for index, bit in enumerate(bit_string):
+				if bit == '1':
+					self.flip_bit(version, bit_positions[index])
+			yield version
+
+	def flip_bit(self, element, position):
+		element[position] = 1 if element[position] == 0 else 1
+		return element
+
+
 	#hash element with k different hash functions, flip bit number [k, hash_functions[k](element)]
 	def add_element(self, element):
 		for i in range(self.k):
@@ -102,3 +133,8 @@ class LocalitySensitiveHash:
 
 def calculate_hamming_distance(element, other_element):
 	return sum([abs(pair[0]-pair[1]) for pair in zip(element, other_element)])
+
+if __name__ == '__main__':
+	d = DistanceSensitiveBloomFilter(1, 1, 1, 1, 1, 1, 1)
+	for v in d.make_all_versions([0,0,0], [0,1,2]):
+		print v
