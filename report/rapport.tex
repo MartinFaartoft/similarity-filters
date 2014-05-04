@@ -90,6 +90,10 @@ In the following we investigate the Similarity Search problem. Different approac
 \subsection{The Problem}
 The Similarity Search problem can be stated as follows: Given a set of elements $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$ using a certain metric.
 
+%Real world example
+We consider a dataset consisting of job applicants, where each applicant in the set has some attributes $A$ for example: \textit{age}, \textit{gender}, \textit{education}, \textit{experience} etc.
+An application of the Similarity Search problem can then be formulated as: Given some employee $q$ with attributes $A$, does the dataset contain one or more applicants that match on at least $d$ attributes.
+
 % Begræns problemet
 In the following we consider the Similarity Search problem for bit-vectors of length $l$, and Hamming distance as metric. This reduction maintains a high degree of generality, since elements from many domains can be encoded as bit-vectors.
 
@@ -130,9 +134,9 @@ The most obvious idea for solving the Similarity Search problem, is brute force.
 
 This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
 
-\paragraph{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both. 
+\paragraph{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both.
 
-While keeping in mind that standard Bloom filters only answer exact membership, we see that one way of achieving this is by relying on extra insertions. Everytime an element is added to the Bloom filter, all elements within distance $d$ are generated and added in addition to the original element. 
+While keeping in mind that standard Bloom filters only answer exact membership, we see that one way of achieving this is by relying on extra insertions. Everytime an element is added to the Bloom filter, all elements within distance $d$ are generated and added in addition to the original element.
 
 Another way to go around this is by sacrificing time. This can be done by still doing normal insertions but instead querying for all elements with distance $d$ of the element we are comparing to. This approach has the benefit of still being space efficient but will cause an exponential blowup of the running time.
 
@@ -168,8 +172,8 @@ Every time an element $q$ is checked for approximate membership, the LSBF is che
 2) Multiple elements added to the LSBF, together, have conspired to set the all the bit positions corresponding to $q$ to $1$, and no single element is approximately close to $q$. (a false positive).
 
 To minimize the probability of a FP, a Verification Scheme (VS) data structure is added.
-This is a standard Bloom filter (ordinary hashing, not LSH), and is maintained as follows: Every time an element is added to the LSBF, the bit positions that corresponds to that element, are encoded (see figure \ref{fig:verification_scheme}) and inserted into the VS Bloom filter. 
-Now when the LSBF is queried, it first verifies that all bits corresponding to the query element $q$ are set to $1$ in the LSBF, and then encodes the bit positions (figure \ref{fig:verification_scheme}), and queries the VS for an exact match. If an exact match for the encoded version of $q$ is found in VS, then it is highly likely that a single element $p$ is responsible for setting all the bits in the LSBF, and the query will return a 'yes'. If, on the other hand, the VS does not contain an element that matches the encoded $q$, then multiple elements must be responsible for the bits being set, and the query will return 'no', effectively catching a false positive. 
+This is a standard Bloom filter (ordinary hashing, not LSH), and is maintained as follows: Every time an element is added to the LSBF, the bit positions that corresponds to that element, are encoded (see figure \ref{fig:verification_scheme}) and inserted into the VS Bloom filter.
+Now when the LSBF is queried, it first verifies that all bits corresponding to the query element $q$ are set to $1$ in the LSBF, and then encodes the bit positions (figure \ref{fig:verification_scheme}), and queries the VS for an exact match. If an exact match for the encoded version of $q$ is found in VS, then it is highly likely that a single element $p$ is responsible for setting all the bits in the LSBF, and the query will return a 'yes'. If, on the other hand, the VS does not contain an element that matches the encoded $q$, then multiple elements must be responsible for the bits being set, and the query will return 'no', effectively catching a false positive.
 
 \begin{figure}[H]
 \centering
@@ -196,6 +200,7 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 
 
 \section{Experiments}
+\todo{Det kunne være mere intersseant at have antal bits på x-aksen.}
 \begin{figure}[H]
 \centering
 \begin{subfigure}{.5\textwidth}
@@ -237,7 +242,7 @@ The default way to initialize the LSH functions used in the Distance-Sensitive B
 This can be remedied, by initializing the LSHs such that all bit positions are sampled equally often.
 In practice we do this by first preparing a vector of length $k \cdot l'$ by repeating the the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l'$, making sure that every index in the sub-vector is unique. This preprocessing step takes $O(l)$ time, and protects the DSBF from poor performance due to skewed sampling.
 
-Figure TODO shows an experiment run with Balanced bit sampling enabled (TODO some color) and disabled (TODO some other color), and shows that this optimization in some cases improves the performance of the DSBF, but never degrades it. 
+Figure TODO shows an experiment run with Balanced bit sampling enabled (TODO some color) and disabled (TODO some other color), and shows that this optimization in some cases improves the performance of the DSBF, but never degrades it.
 \todo{produce and insert graphs here}
 
 \subsection{Eliminating False Negatives}
@@ -252,16 +257,18 @@ Lowering $t$ comes at a price, the lower the value of $t$, the higher the probab
 This turns out to be a big deal, $k$ is usually below 100, $l_n$ can be kept small, but not smaller than 1. Those two bound $\epsilon_{abs}$, to definitely be below 100, which in turn makes it impossible for $\epsilon$ to be a constant fraction of $l$, for increasing $l$ values.
 
 \subsection{Wildcard Search}
-The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". In the following. A natural extension to this, is to want to ignore certain bits in $q$, when calculating the similarity. In a real world example, \todo{Marcus work your IRL example magic here}.
+The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". In the following. A natural extension to this, is to want to ignore certain bits in $q$, when calculating the similarity.
 
-\subsubsection*{The Extended Problem} 
+If we examine the job applicants example from the introdution, one application of the Similarity Search with Wildcards can formulated as: Given some employee $q$ with attributes $A$, does the dataset contain one or more applicants that match on at least $d$ attributes while disregarding the attributes $W$.
+
+\subsubsection*{The Extended Problem}
 The extended problem can be stated as follows:
 
 Let $W$ be a set of wildcard bit positions: $\forall w \in W (w \in \mathbb{Z}^+ \land w < l)$.\\
 Given a set of elements $S$, a query element $q$ and a set of wildcards $W$. Determine if there exists an element $s \in S$ that is 'close' to $q$, not counting differences on wildcard positions $W$. Where 'close' is defined as being within a given distance, $d$ using a given metric.
 
-\subsubsection*{Solving Wildcard Search} 
-We have identified two approaches to solving the extended problem. 
+\subsubsection*{Solving Wildcard Search}
+We have identified two approaches to solving the extended problem.
 \paragraph{The first approach} is to simply ignore the output from all LSH's that sample one or more wildcard bits. This can be done without modifying the insertion of elements into the DSBF, and without storing additional data. However, it raises some troublesome questions.
 
 \begin{itemize}
@@ -271,9 +278,9 @@ We have identified two approaches to solving the extended problem.
 
 The second question intuitively seems like it will require $|W|$ to be small, in order to keep the false positive rate low. And overall, the approach seems inferior to the second approach.
 
-\paragraph{The second approach} is to use the idea from the naïve solution, outlined in \ref{naive_approaches} and query the DSBF structure multiple times with different variations of $q$. As a simple example, assume that we are querying a previously constructed DSBF with the following: 
+\paragraph{The second approach} is to use the idea from the naïve solution, outlined in \ref{naive_approaches} and query the DSBF structure multiple times with different variations of $q$. As a simple example, assume that we are querying a previously constructed DSBF with the following:
 \[q=[0,0,0,0], W=\{2,3\}\]
-Since the last two bits are wildcarded, we generate all possible variations of $q$ on the wildcarded positions: 
+Since the last two bits are wildcarded, we generate all possible variations of $q$ on the wildcarded positions:
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
 We now query the DSBF with each of the variations, and if any of them returns 'close', we report 'close' to the original query $q, W$.
 
@@ -294,7 +301,7 @@ looks up the corresponding positions, and returns the binary 'OR' between the va
 $LSH_3$ does the same thing, but since it samples both bits 2 and 3, it has to generate 4 variations of $q$ and 'OR' the results.
 The rest of the query is unchanged, if the number of LSH's that returned 'true' exceeds the threshold, $t$, the DSBF reports 'close'.\\
 
-The above requires $2^{min(|W|, l')}$ queries in the worst case. 
+The above requires $2^{min(|W|, l')}$ queries in the worst case.
 This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH hashes all the bits positions in $W$.
 
 
