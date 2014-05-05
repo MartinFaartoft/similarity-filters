@@ -173,10 +173,10 @@ def pagh_graph():
 def harvard_graph():
     epsilon = 0.1
     delta = 0.4
-    l = 1000
-    n = 1000
+    l = 100
+    n = 10
     number_of_candidates = 100
-    no_wildcards = 100
+    no_wildcards = 50
 
     wildcards = random.sample(range(l), no_wildcards)
     #wildcards = []
@@ -194,7 +194,7 @@ def harvard_graph():
         ratios, stats = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates, wildcards)
         close_stats, far_stats = stats
         data_row['ratios'] = ratios
-        data_row['parameters'] = k, space, total_input_size, fraction
+        data_row['parameters'] = k, space, total_input_size, fraction, l, k, n, l_prime
         data_row['close_stats'] = close_stats
         data_row['far_stats'] = far_stats
         data.append(data_row)

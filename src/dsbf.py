@@ -72,13 +72,17 @@ class DistanceSensitiveBloomFilter:
 
 	def count_number_of_true_with_wildcards(self, element, wildcards):
 		wildcards = set(wildcards)
+		#print "wildcards: ", wildcards
 		number_of_trues = 0;
 		stats = []
 		for i in range(self.k):
 			h = self.hash_functions[i]
 			#find intersection between wildcards and h.indices_of_bits_to_sample
+			#print "bits sampled: ", h.indices_of_bits_to_sample
 			intersection = list(wildcards.intersection(set(h.indices_of_bits_to_sample)))
+			#print "intersection: ", intersection
 			worst_case_work = 2**len(intersection)
+			#print "SPAM", worst_case_work, len(wildcards), len(h.indices_of_bits_to_sample)
 			actual_work = 0
 			for version in self.make_all_versions(element, intersection):
 				actual_work += 1
@@ -93,14 +97,14 @@ class DistanceSensitiveBloomFilter:
 	def make_all_versions(self, element, bit_positions):
 		if len(bit_positions) == 0:
 			yield element
-
-		for i in range(2 ** len(bit_positions)):
-			version = list(element) #make a copy that is ready for bit flipping
-			bit_string = bin(i)[2:][::-1] #peeling off '0b' and reversing the string (to conserve prepended zero), result is a string e.g. '1101'
-			for index, bit in enumerate(bit_string):
-				if bit == '1':
-					self.flip_bit(version, bit_positions[index])
-			yield version
+		else:
+			for i in range(2 ** len(bit_positions)):
+				version = list(element) #make a copy that is ready for bit flipping
+				bit_string = bin(i)[2:][::-1] #peeling off '0b' and reversing the string (to conserve prepended zero), result is a string e.g. '1101'
+				for index, bit in enumerate(bit_string):
+					if bit == '1':
+						self.flip_bit(version, bit_positions[index])
+				yield version
 
 	def flip_bit(self, element, position):
 		element[position] = 1 if element[position] == 0 else 1
@@ -147,5 +151,5 @@ def calculate_hamming_distance(element, other_element):
 
 if __name__ == '__main__':
 	d = DistanceSensitiveBloomFilter(1, 1, 1, 1, 1, 1, 1)
-	for v in d.make_all_versions([0,0,0], [0,1,2]):
+	for v in d.make_all_versions([0,0,0], [1,2]):
 		print v
