@@ -77,7 +77,7 @@ class DistanceSensitiveBloomFilter:
 		for i in range(self.k):
 			h = self.hash_functions[i]
 			#find intersection between wildcards and h.indices_of_bits_to_sample
-			intersection = wildcards.intersection(set(h.indices_of_bits_to_sample))
+			intersection = list(wildcards.intersection(set(h.indices_of_bits_to_sample)))
 			worst_case_work = 2**len(intersection)
 			actual_work = 0
 			for version in self.make_all_versions(element, intersection):
