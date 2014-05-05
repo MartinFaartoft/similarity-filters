@@ -105,9 +105,10 @@ In the following we consider the Similarity Search problem for bit-vectors of le
 A distance metric for bit-vectors. The Hamming distance between two vectors $v_1, v_2$ is given as the number of positions $i$ where $v_1[i] \neq v_2[i]$
 
 \item \textbf{Bloom Filter}
-\todo{Skriv selv eller skriv tydeligt at det er et quote}
+
+In 'An Improved Construction for Counting Bloom Filters' \cite{paper:bloom} Bloom filters are described as:
 \begin{quotation}
-A Bloom filter is an inexact representation of a set that allows for false positives when queried; that is, it can sometimes say that an element is in the set when it is not. In return, a Bloom filter offers very compact storage: less than 10 bits per element are required for a 1\% false positive probability, independent of the size or number of elements in the set.\cite{paper:bloom}
+A Bloom filter is an inexact representation of a set that allows for false positives when queried; that is, it can sometimes say that an element is in the set when it is not. In return, a Bloom filter offers very compact storage: less than 10 bits per element are required for a 1\% false positive probability, independent of the size or number of elements in the set.
 \end{quotation}
 
 
@@ -118,11 +119,11 @@ Ordinary hashing tries to minimize the probability of a collision, while Localit
 Not all similarity-measures admits LSH, but the Hamming distance metric on bit-vectors admits a particular simple one.
 Simply sample a number of bit positions from the input at random.
 
-\item \textbf{K-closeness} %Martin siger: Har jeg nu slettet/omskrevet det afsnit der omtalte K-closeness?
+\item \textbf{$\epsilon$-closeness}
   \begin{itemize}
-    \item If a vector $y$ in $S$ differs from $x$ in at most $k$ bits, it is $k$-close to $x$. The data structure must return “close”.
-    \item If every vector $y$ in $S$ differs from $x$ in at least $2k$ bits, there is no vector that is $k$-close to $x$. We would like the data structure to return “not close”.
-    \item In all other cases, i.e. when the distance to the nearest vector is between $k+1$ and $2k-1$, the data structure can give any answer it likes.
+    \item If an element $s \in S$ differs from $x$ in at most an $\epsilon$-fraction of the bits, it is said to be $\epsilon$-close to $x$. The data structure must return “close”.
+    \item If every vector $s \in S$ differs from $x$ in at least a $\delta$-fraction of the bits, then the data structure should return 'not close'.
+    \item In all other cases, i.e. when the distance to the nearest vector is between $\epsilon$ and $\delta$, the data structure can give any answer it likes.
   \end{itemize}
 
 \end{description}
@@ -133,7 +134,7 @@ Simply sample a number of bit positions from the input at random.
 \paragraph{Brute force}
 The most obvious idea for solving the Similarity Search problem, is brute force. Store the elements $S$ in a linked list. When a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
 
-This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
+This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications. \todo{flet lidt om jobkandidat IRL snask ind her}
 
 \paragraph{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both.
 
@@ -189,6 +190,8 @@ Note that the VS is a standard Bloom filter, and therefor allows false positives
 \paragraph{Minimizing False Negatives}
 They use a method called Active Overflowed Scheme, which utilizes the property of the locality sensitive hashing algorithms that proximate elements will be stored close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
 
+We have based our work on the work of Kirsch and Mitzenmacher, as their work seems more robust by using thresholds and the way they present their results allow for easier comparison with our results. They main reason we have not used Hua et al. in our work is that they rely a lot on their LSHs, but provide no clear description on how they construct these. Furthermore, it is unclear how they are able to implement a data structure in which they efficiently are able to store data for their Active Overflowed Scheme. As this seems to be the basis for half of their contribution, and along with the fact that their results are in a format which makes them hard to compare against, we have chosen not to include them in our work
+
 \section{Theory} % Dette afsnit skal nok hedde noget andet
 
 %valg af T, k, m', n', n
@@ -201,7 +204,7 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 
 
 \section{Experiments}
-\todo{Det kunne være mere intersseant at have antal bits på x-aksen.}
+\todo{Det kunne være mere interesseant at have antal bits på x-aksen.}
 \begin{figure}[H]
 \centering
 \begin{subfigure}{.5\textwidth}
@@ -285,7 +288,7 @@ Since the last two bits are wildcarded, we generate all possible variations of $
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
 We now query the DSBF with each of the variations, and if any of them returns 'close', we report 'close' to the original query $q, W$.
 
-This requires $2^{|W|}$ queries in the worst case, and half of that in the average case, assuming we stop querying after receiving the first 'close' response. Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
+This requires $2^{|W|}$ queries in the worst case, and half \todo{det med half gælder kun hvis vi ved at den er close}of that in the average case, assuming we stop querying after receiving the first 'close' response. Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
 
 This result is reasonably good for a small number of wildcards, but we can do better if we leverage the inner workings of the DSBF, instead of treating it as a black box.
 When the DSBF is queried, it hashes the query element $q$ using $k$ different LSH functions, and checks the corresponding locations in the internal memory. Each of the $k$ LSH functions sample a different subset $l'$ out of the total $l$ bits in $q$. This means that when the DSBF is queried multiple times with different variations of $q$, some of the LSH functions will do repeated work if they do not sample any of the wildcarded bits.
@@ -303,18 +306,29 @@ $LSH_3$ does the same thing, but since it samples both bits 2 and 3, it has to g
 The rest of the query is unchanged, if the number of LSH's that returned 'true' exceeds the threshold, $t$, the DSBF reports 'close'.\\
 
 The above requires $2^{min(|W|, l')}$ queries in the worst case.
-This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH hashes all the bits positions in $W$.
-
+This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH hashes all the bit positions in $W$.
+\todo{analyse af average case time complexity goes here?}
 
 %advantages
-
 %no prior knowledge of W required
 %no changes to insert
 %no extra memory required
+\subsubsection*{Properties of Wildcard Search}
+The second approach has the following desirable properties:
+\paragraph{No prior knowledge of W required} At the time of construction, the DSBF requires no knowledge of what / how many bits will be wildcarded.
 
+\paragraph{No changes to 'insert'} The process of adding items to the DSBF remains unchanged.
+
+\paragraph{No additional memory required} Because the Wildcard search user multiple queries, no additional memory is required.
+\\
 %drawbacks
 %increased query time-complexity
 %increased FP due to non-LSH collisions
+
+And the following undesirable properties:
+\paragraph{Increased Time Complexity for Wildcard Search} Multiple queries for each LSH, means that the time complexity is no longer constant.
+
+\paragraph{Increased False Positive Rate} When querying each LSH multiple times, the chances of a false positive also increases.
 
 %experiments
 
@@ -327,7 +341,7 @@ This is an improvement in two ways: The worst-case time complexity is now upper 
 
 \bibitem{paper:harvard}
 Adam Kirsch, Michael Mitzenmacher
-Distance-Sensitive Bloom Filters
+"Distance-Sensitive Bloom Filters"
 
 \bibitem{paper:hua}
 Yu Hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng, "Locality-Sensitive Bloom Filter for Approximate Membership Query", IEEE Transactions on Computers, Vol. 61, No. 6, 2012
@@ -335,7 +349,7 @@ Yu Hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng, "Locality-Sensitive Bloom Filt
 
 \bibitem{paper:bloom}
 Flavio Bonomi, Michael Mitzenmacher, Rina Panigrahy, Sushil Singh, and George Varghese
-An Improved Construction for Counting Bloom Filters
+"An Improved Construction for Counting Bloom Filters"
 
       %Sådan her ref'er man en URL
       %\bibitem{lit:json}
