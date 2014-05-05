@@ -99,13 +99,15 @@ def calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidat
     candidate = randBinList(l)
     dsbf.add_element(candidate)
     populate_dsbf(dsbf, n - 1, l)
-
+    close_stats = []
+    far_stats = []
     tp = 0
     fp = 0
     tn = 0
     fn = 0
     for close_element in generate_close_candidates(candidate, 0, closeness, number_of_candidates, wildcards):
         is_close, stats = dsbf.is_close_wildcards(close_element, wildcards)
+        close_stats.append(stats)
         if is_close:
             tp += 1
         else:
@@ -114,6 +116,7 @@ def calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidat
     count_true = 0
     for far_element in generate_close_candidates(candidate, farness, l, number_of_candidates, wildcards):
         is_close, stats = dsbf.is_close_wildcards(far_element, wildcards)
+        far_stats.append(stats)
         if is_close:
             fp += 1
         else:
@@ -124,7 +127,7 @@ def calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidat
     fpr = fp / float(fp+tn)
     tnr = tn / float(fp+tn)
 
-    return (tpr, fnr, fpr, tnr)
+    return (tpr, fnr, fpr, tnr), (close_stats, far_stats)
 
 def pagh_graph():
     epsilon = 0.05
@@ -182,13 +185,13 @@ def harvard_graph():
     farness = int(math.floor(l * delta))
     data = []
 
-    for step_k in range(1, 30, 1):
+    for step_k in range(1, 30, 10):
         print "K=", step_k
         epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction = calculate_harvard_params(epsilon, delta, l, step_k, n)
         dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
 
         data_row = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates, wildcards)
-        data.append((k, data_row))
+        data.append((k, space, total_input_size, fraction, data_row))
 
     import json
 
