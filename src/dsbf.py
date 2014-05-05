@@ -86,7 +86,7 @@ class DistanceSensitiveBloomFilter:
 	#return a list containing all the possible versions of element, where bit_positions may take any value
 	def make_all_versions(self, element, bit_positions):
 		if len(bit_positions) == 0:
-			return [element]
+			yield element
 
 		for i in range(2 ** len(bit_positions)):
 			version = list(element) #make a copy that is ready for bit flipping
