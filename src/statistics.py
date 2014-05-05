@@ -1,4 +1,4 @@
-from dsbf import DistanceSensitiveBloomFilter
+#from dsbf import DistanceSensitiveBloomFilter
 import random
 import math
 
@@ -7,8 +7,8 @@ randBinList = lambda n: [random.randint(0, 1) for b in range(1, n+1)]
 
 prime_100 = 2147483659
 
-seed = 98457198
-random.seed(seed)
+#seed = 98457198
+#random.seed(seed)
 
 #number_of_elements = 1000
 #number_of_candidates = 1000
@@ -63,18 +63,21 @@ def calculate_params_eliminate_false_negatives(epsilon, delta, l, k, n, l_prime)
     return epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction
 
 
-def generate_close_candidates(candidate, min_distance, max_distance, number_of_candidates):
-    """ candidate = candidate bit array
-        close = number of bits to flip """
-    #Generate bit mask
+def generate_close_candidates(candidate, min_distance, max_distance, number_of_candidates, wildcards=[]):
     zeroes = [0] * len(candidate)
-    #number_of_bits_to_flip = random.randint(min_distance, max_distance)
     number_of_bits_to_flip = max_distance if min_distance == 0 else min_distance
     for i in range(number_of_bits_to_flip):
         zeroes[i] = 1
 
     for i in range(number_of_candidates):
         random.shuffle(zeroes)
+        number_of_bits_to_resample = [zeroes[x] for x in wildcards].count(1)
+        if number_of_bits_to_resample > 0:
+            incices_to_choose = [u for u, y in enumerate(zeroes) if y == 0]
+            flip_bits = random.sample(incices_to_choose, number_of_bits_to_resample)
+            for v in flip_bits:
+                zeroes[v] = 1
+
         copy = list(candidate)
         for u in range(len(zeroes)):
             if zeroes[u] == 1:
@@ -119,41 +122,51 @@ def calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidat
     return (tpr, fnr, fpr, tnr)
 
 def pagh_graph():
-    epsilon = 0.1
+    epsilon = 0.05
     delta = 0.4
     l = 65536
-    n = 1000
+    n = 10000
     number_of_candidates = 1000
     closeness = int(math.floor(l * epsilon))
     farness = int(math.floor(l * delta))
     final_list = []
-    for step_k in range(1,50):
+    for step_k in range(49,50):
 
         print step_k
-        epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_harvard_params(epsilon=epsilon, delta=delta, l=l, k=step_k, n=n)
 
+        epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction = calculate_harvard_params(epsilon=epsilon, delta=delta, l=l, k=step_k, n=n)
+
+        print threshold
         dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l)
         candidate = randBinList(l)
         dsbf.add_element(candidate)
         populate_dsbf(dsbf, n - 1, l)
         count_true = 0
         k_true_list = []
+        k_false_list = []
+
 
         for close_element in generate_close_candidates(candidate, 0, closeness, number_of_candidates):
             k_true_list.append(dsbf.count_number_of_true_values(close_element))
 
+        for far_element in generate_close_candidates(candidate, farness, l, number_of_candidates):
+            k_false_list.append(dsbf.count_number_of_true_values(far_element))
+
         k_true_list.sort()
+        k_false_list.sort()
 
         final_list.append(k_true_list)
+        final_list.append(k_false_list)
 
     import json
     print json.dumps(final_list)
 
+
 def harvard_graph():
-    epsilon = 0.01
+    epsilon = 0.1
     delta = 0.4
-    l = 100
-    n = 10000
+    l = 65536
+    n = 1000
     number_of_candidates = 1000
 
 
@@ -161,8 +174,8 @@ def harvard_graph():
     farness = int(math.floor(l * delta))
     data = []
 
-    for step_k in range(1,30,1):
-        print "K=",step_k
+    for step_k in range(1, 30, 1):
+        print "K=", step_k
         epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_harvard_params(epsilon=epsilon, delta=delta, l=l, k=step_k, n=n)
         dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
 
@@ -208,9 +221,18 @@ def eliminate_false_negatives_experiment():
         json.dump(data_collection, outfile)
 
 
+def test_generate_close():
+    candidate = [1,1,1,1]
+    wildcards = [2,3]
+    min_distance = 2
+    max_distance = 0
+    number_of_candidates = 1
+
+    list(generate_close_candidates(candidate, min_distance, max_distance, number_of_candidates, wildcards))
 
 #pagh_graph()
 #run()
 #harvard_graph()
-eliminate_false_negatives_experiment()
+#eliminate_false_negatives_experiment()
 #def __init__(self, k, m, bits_to_sample, prime, seed):
+test_generate_close()
