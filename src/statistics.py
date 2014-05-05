@@ -173,10 +173,10 @@ def pagh_graph():
 def harvard_graph():
     epsilon = 0.1
     delta = 0.4
-    l = 65536
+    l = 1000
     n = 1000
-    number_of_candidates = 10000
-    no_wildcards = 10
+    number_of_candidates = 100
+    no_wildcards = 100
 
     wildcards = random.sample(range(l), no_wildcards)
     #wildcards = []
@@ -185,13 +185,19 @@ def harvard_graph():
     farness = int(math.floor(l * delta))
     data = []
 
-    for step_k in range(1, 30, 10):
+    for step_k in range(10, 31, 10):
         print "K=", step_k
         epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction = calculate_harvard_params(epsilon, delta, l, step_k, n)
         dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
+        data_row = {}
 
-        data_row = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates, wildcards)
-        data.append((k, space, total_input_size, fraction, data_row))
+        ratios, stats = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates, wildcards)
+        close_stats, far_stats = stats
+        data_row['ratios'] = ratios
+        data_row['parameters'] = k, space, total_input_size, fraction
+        data_row['close_stats'] = close_stats
+        data_row['far_stats'] = far_stats
+        data.append(data_row)
 
     import json
 
