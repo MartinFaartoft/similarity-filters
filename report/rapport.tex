@@ -190,6 +190,8 @@ Note that the VS is a standard Bloom filter, and therefor allows false positives
 \paragraph{Minimizing False Negatives}
 They use a method called Active Overflowed Scheme, which utilizes the property of the locality sensitive hashing algorithms that proximate elements will be stored close to each other. The idea is that a pair of close elements may not be hashed to the same value, but instead be put in adjacent bins in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, you also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives.
 
+We have based our work on \cite{paper:harvard}, as their work seems more robust by using thresholds and the way they present their results allow for easier comparison with our results. They main reason we have not used Hua et al. in our work is that they rely a lot on their LSHs, but provide no clear description on how they construct these. Furthermore, it is unclear how they are able to implement a data structure in which they efficiently are able to store data for their Active Overflowed Scheme. As this seems to be the basis for half of their contribution, and along with the fact that their results are in a format which makes them hard to compare against, we have chosen not to include them in our work
+
 \section{Theory} % Dette afsnit skal nok hedde noget andet
 
 %valg af T, k, m', n', n
