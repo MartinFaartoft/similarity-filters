@@ -73,15 +73,21 @@ class DistanceSensitiveBloomFilter:
 	def count_number_of_true_with_wildcards(self, element, wildcards):
 		wildcards = set(wildcards)
 		number_of_trues = 0;
+		stats = []
 		for i in range(self.k):
 			h = self.hash_functions[i]
 			#find intersection between wildcards and h.indices_of_bits_to_sample
 			intersection = wildcards.intersection(set(h.indices_of_bits_to_sample))
+			worst_case_work = 2**len(intersection)
+			actual_work = 0
 			for version in self.make_all_versions(element, intersection):
+				actual_work += 1
 				if self.bit_array[i][h.hash(version)] == 1:
 					number_of_trues += 1
 					break
-		return number_of_trues
+			#save worst_case and actual_work somewhere
+			stats.append((worst_case_work, actual_work))
+		return number_of_trues, stats #stats contains k tuples of (worst_case_work, actual_work)
 
 	#return a list containing all the possible versions of element, where bit_positions may take any value
 	def make_all_versions(self, element, bit_positions):
@@ -109,6 +115,11 @@ class DistanceSensitiveBloomFilter:
 
 	def is_close(self, element):
 		return self.threshold <= self.count_number_of_true_values(element)
+
+	def is_close_wildcards(self, element, wildcards):
+		number_of_trues, stats = self.count_number_of_true_with_wildcards(element, wildcards)
+		result = self.threshold <= number_of_trues
+		return result, stats
 
 class LocalitySensitiveHash:
 	def __init__(self, indices_of_bits_to_sample, max_output, a, b, p):
