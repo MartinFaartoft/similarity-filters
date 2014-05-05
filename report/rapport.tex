@@ -251,7 +251,7 @@ Building on the previous idea from \ref{sec:balanced}, we suggest a way to elimi
 \paragraph{Providing a guarantee} against false negatives can be achieved by lowering the DSBF threshold appropriately. Armed with the knowledge of $n_{false}$ from \ref{p:fn}, we can set $t = k - n_{false}$, and thereby eliminate the possibility of false negatives completely.
 
 Lowering $t$ comes at a price, the lower the value of $t$, the higher the probability of a false positive. In the edge case, where $t=0$, the DSBF becomes useless, answering 'close' to every query. Taking this into account, we have to constrain the value of $n_{false}$ such that $t>0$.
-\[t > 0 \leftrightarrow k > n_{false} \leftrightarrow k > \epsilon_{abs} \cdot l_n\]
+\[t > 0 \Leftrightarrow k > n_{false} \Leftrightarrow k > \epsilon_{abs} \cdot l_n\]
 This turns out to be a big deal, $k$ is usually below 100, $l_n$ can be kept small, but not smaller than 1. Those two bound $\epsilon_{abs}$, to definitely be below 100, which in turn makes it impossible for $\epsilon$ to be a constant fraction of $l$, for increasing $l$ values.
 
 \subsection{Wildcard Search}
@@ -299,6 +299,7 @@ looks up the corresponding positions, and returns the binary 'OR' between the va
 $LSH_3$ does the same thing, but since it samples both bits 2 and 3, it has to generate 4 variations of $q$ and 'OR' the results.
 The rest of the query is unchanged, if the number of LSH's that returned 'true' exceeds the threshold, $t$, the DSBF reports 'close'.\\
 
+\label{lbl:worst_case}
 The above requires $2^{min(|W|, l')}$ queries in the worst case.
 This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH hashes all the bit positions in $W$.
 \todo{analyse af average case time complexity goes here?}
@@ -323,6 +324,16 @@ And the following undesirable properties:
 \paragraph{Increased Time Complexity for Wildcard Search} Multiple queries for each LSH, means that the time complexity is no longer constant.
 
 \paragraph{Increased False Positive Rate} When querying each LSH multiple times, the chances of a false positive also increases. The probability of an accidental collision\footnote{See Section \ref{sec:lsh}} is constant, so querying multiple times will increase the probability of a false positive.
+
+
+\subsubsection*{Choosing the number of wildcarded bits}
+As shown earlier in \ref{lbl:worst_case}, the query time grows exponentially with the number of wildcarded bits sampled by each LSH. This motivates us to keep that number small. The expected number of wildcarded bits sampled by some LSH is given by
+\[E(X_w)=l' \cdot \frac{|W|}{l}\]
+If we want each LSH to expectedly sample $b$ wildcarded bits, we can choose $|W|$ such that:
+\[E(X_w)=b \Rightarrow b = l' \cdot \frac{|W|}{l} \Leftrightarrow |W| = \frac{b \cdot l}{l'}\]
+This will ensure that query times are reasonable in practice.\todo{lidt svagt formuleret?}
+
+
 
 %experiments
 
