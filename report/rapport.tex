@@ -134,7 +134,7 @@ Simply sample a number of bit positions from the input at random.
 \paragraph{Brute force}
 The most obvious idea for solving the Similarity Search problem, is brute force. Store the elements $S$ in a linked list. When a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
 
-This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
+This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications. \todo{flet lidt om jobkandidat IRL snask ind her}
 
 \paragraph{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both.
 
@@ -202,7 +202,7 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 
 
 \section{Experiments}
-\todo{Det kunne være mere intersseant at have antal bits på x-aksen.}
+\todo{Det kunne være mere interesseant at have antal bits på x-aksen.}
 \begin{figure}[H]
 \centering
 \begin{subfigure}{.5\textwidth}
@@ -286,7 +286,7 @@ Since the last two bits are wildcarded, we generate all possible variations of $
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
 We now query the DSBF with each of the variations, and if any of them returns 'close', we report 'close' to the original query $q, W$.
 
-This requires $2^{|W|}$ queries in the worst case, and half of that in the average case, assuming we stop querying after receiving the first 'close' response. Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
+This requires $2^{|W|}$ queries in the worst case, and half \todo{det med half gælder kun hvis vi ved at den er close}of that in the average case, assuming we stop querying after receiving the first 'close' response. Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
 
 This result is reasonably good for a small number of wildcards, but we can do better if we leverage the inner workings of the DSBF, instead of treating it as a black box.
 When the DSBF is queried, it hashes the query element $q$ using $k$ different LSH functions, and checks the corresponding locations in the internal memory. Each of the $k$ LSH functions sample a different subset $l'$ out of the total $l$ bits in $q$. This means that when the DSBF is queried multiple times with different variations of $q$, some of the LSH functions will do repeated work if they do not sample any of the wildcarded bits.
@@ -304,18 +304,29 @@ $LSH_3$ does the same thing, but since it samples both bits 2 and 3, it has to g
 The rest of the query is unchanged, if the number of LSH's that returned 'true' exceeds the threshold, $t$, the DSBF reports 'close'.\\
 
 The above requires $2^{min(|W|, l')}$ queries in the worst case.
-This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH hashes all the bits positions in $W$.
-
+This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH hashes all the bit positions in $W$.
+\todo{analyse af average case time complexity goes here?}
 
 %advantages
-
 %no prior knowledge of W required
 %no changes to insert
 %no extra memory required
+\subsubsection*{Properties of Wildcard Search}
+The second approach has the following desirable properties:
+\paragraph{No prior knowledge of W required} At the time of construction, the DSBF requires no knowledge of what / how many bits will be wildcarded.
 
+\paragraph{No changes to 'insert'} The process of adding items to the DSBF remains unchanged.
+
+\paragraph{No additional memory required} Because the Wildcard search user multiple queries, no additional memory is required.
+\\
 %drawbacks
 %increased query time-complexity
 %increased FP due to non-LSH collisions
+
+And the following undesirable properties:
+\paragraph{Increased Time Complexity for Wildcard Search} Multiple queries for each LSH, means that the time complexity is no longer constant.
+
+\paragraph{Increased False Positive Rate} When querying each LSH multiple times, the chances of a false positive also increases.
 
 %experiments
 
@@ -328,7 +339,7 @@ This is an improvement in two ways: The worst-case time complexity is now upper 
 
 \bibitem{paper:harvard}
 Adam Kirsch, Michael Mitzenmacher
-Distance-Sensitive Bloom Filters
+"Distance-Sensitive Bloom Filters"
 
 \bibitem{paper:hua}
 Yu Hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng, "Locality-Sensitive Bloom Filter for Approximate Membership Query", IEEE Transactions on Computers, Vol. 61, No. 6, 2012
@@ -336,7 +347,7 @@ Yu Hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng, "Locality-Sensitive Bloom Filt
 
 \bibitem{paper:bloom}
 Flavio Bonomi, Michael Mitzenmacher, Rina Panigrahy, Sushil Singh, and George Varghese
-An Improved Construction for Counting Bloom Filters
+"An Improved Construction for Counting Bloom Filters"
 
       %Sådan her ref'er man en URL
       %\bibitem{lit:json}
