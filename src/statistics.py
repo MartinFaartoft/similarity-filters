@@ -1,4 +1,4 @@
-#from dsbf import DistanceSensitiveBloomFilter
+from dsbf import DistanceSensitiveBloomFilter
 import random
 import math
 
@@ -7,8 +7,8 @@ randBinList = lambda n: [random.randint(0, 1) for b in range(1, n+1)]
 
 prime_100 = 2147483659
 
-#seed = 98457198
-#random.seed(seed)
+seed = 98457198
+random.seed(seed)
 
 #number_of_elements = 1000
 #number_of_candidates = 1000
@@ -70,17 +70,20 @@ def generate_close_candidates(candidate, min_distance, max_distance, number_of_c
         zeroes[i] = 1
 
     for i in range(number_of_candidates):
-        random.shuffle(zeroes)
-        number_of_bits_to_resample = [zeroes[x] for x in wildcards].count(1)
+        mask = list(zeroes)
+        random.shuffle(mask)
+        number_of_bits_to_resample = [mask[x] for x in wildcards].count(1)
         if number_of_bits_to_resample > 0:
-            incices_to_choose = [u for u, y in enumerate(zeroes) if y == 0]
-            flip_bits = random.sample(incices_to_choose, number_of_bits_to_resample)
+            indices_to_choose = [u for u, y in enumerate(mask) if y == 0]
+            #print number_of_bits_to_resample, len(indices_to_choose)
+
+            flip_bits = random.sample(indices_to_choose, number_of_bits_to_resample)
             for v in flip_bits:
-                zeroes[v] = 1
+                mask[v] = 1
 
         copy = list(candidate)
         for u in range(len(zeroes)):
-            if zeroes[u] == 1:
+            if mask[u] == 1:
                 copy[u] = 0 if copy[u] == 1 else 1
         yield copy
 
@@ -92,7 +95,7 @@ def populate_dsbf(dsbf, n, length):
         dsbf.add_element(element)
 
 
-def calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates):
+def calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates, wildcards=[]):
     candidate = randBinList(l)
     dsbf.add_element(candidate)
     populate_dsbf(dsbf, n - 1, l)
@@ -101,14 +104,14 @@ def calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidat
     fp = 0
     tn = 0
     fn = 0
-    for close_element in generate_close_candidates(candidate, 0, closeness, number_of_candidates):
+    for close_element in generate_close_candidates(candidate, 0, closeness, number_of_candidates, wildcards):
         if dsbf.is_close(close_element):
             tp += 1
         else:
             fn += 1
 
     count_true = 0
-    for far_element in generate_close_candidates(candidate, farness, l, number_of_candidates):
+    for far_element in generate_close_candidates(candidate, farness, l, number_of_candidates, wildcards):
         if dsbf.is_close(far_element):
             fp += 1
         else:
@@ -167,8 +170,11 @@ def harvard_graph():
     delta = 0.4
     l = 65536
     n = 1000
-    number_of_candidates = 1000
+    number_of_candidates = 10000
+    no_wildcards = 7500
 
+    wildcards = random.sample(range(l), no_wildcards)
+    #wildcards = []
 
     closeness = int(math.floor(l * epsilon))
     farness = int(math.floor(l * delta))
@@ -176,15 +182,15 @@ def harvard_graph():
 
     for step_k in range(1, 30, 1):
         print "K=", step_k
-        epsilon, delta, l, k, n, l_prime, m_prime, threshold = calculate_harvard_params(epsilon=epsilon, delta=delta, l=l, k=step_k, n=n)
+        epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction = calculate_harvard_params(epsilon, delta, l, step_k, n)
         dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
 
-        data_row = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates)
+        data_row = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates, wildcards)
         data.append((k, data_row))
 
     import json
 
-    with open('harvard_graph.json', 'w') as outfile:
+    with open('wildcard/harvard_graph_with_wildcards_%d.json' % no_wildcards, 'w') as outfile:
         json.dump(data, outfile)
 
 def eliminate_false_negatives_experiment():
@@ -232,7 +238,7 @@ def test_generate_close():
 
 #pagh_graph()
 #run()
-#harvard_graph()
+harvard_graph()
 #eliminate_false_negatives_experiment()
 #def __init__(self, k, m, bits_to_sample, prime, seed):
-test_generate_close()
+#test_generate_close()
