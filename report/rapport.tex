@@ -105,9 +105,10 @@ In the following we consider the Similarity Search problem for bit-vectors of le
 A distance metric for bit-vectors. The Hamming distance between two vectors $v_1, v_2$ is given as the number of positions $i$ where $v_1[i] \neq v_2[i]$
 
 \item \textbf{Bloom Filter}
-\todo{Skriv selv eller skriv tydeligt at det er et quote}
+
+In 'An Improved Construction for Counting Bloom Filters' \cite{paper:bloom} Bloom filters are described as:
 \begin{quotation}
-A Bloom filter is an inexact representation of a set that allows for false positives when queried; that is, it can sometimes say that an element is in the set when it is not. In return, a Bloom filter offers very compact storage: less than 10 bits per element are required for a 1\% false positive probability, independent of the size or number of elements in the set.\cite{paper:bloom}
+A Bloom filter is an inexact representation of a set that allows for false positives when queried; that is, it can sometimes say that an element is in the set when it is not. In return, a Bloom filter offers very compact storage: less than 10 bits per element are required for a 1\% false positive probability, independent of the size or number of elements in the set.
 \end{quotation}
 
 
@@ -118,11 +119,11 @@ Ordinary hashing tries to minimize the probability of a collision, while Localit
 Not all similarity-measures admits LSH, but the Hamming distance metric on bit-vectors admits a particular simple one.
 Simply sample a number of bit positions from the input at random.
 
-\item \textbf{K-closeness} %Martin siger: Har jeg nu slettet/omskrevet det afsnit der omtalte K-closeness?
+\item \textbf{$\epsilon$-closeness}
   \begin{itemize}
-    \item If a vector $y$ in $S$ differs from $x$ in at most $k$ bits, it is $k$-close to $x$. The data structure must return “close”.
-    \item If every vector $y$ in $S$ differs from $x$ in at least $2k$ bits, there is no vector that is $k$-close to $x$. We would like the data structure to return “not close”.
-    \item In all other cases, i.e. when the distance to the nearest vector is between $k+1$ and $2k-1$, the data structure can give any answer it likes.
+    \item If an element $s \in S$ differs from $x$ in at most an $\epsilon$-fraction of the bits, it is said to be $\epsilon$-close to $x$. The data structure must return “close”.
+    \item If every vector $s \in S$ differs from $x$ in at least a $\delta$-fraction of the bits, then the data structure should return 'not close'.
+    \item In all other cases, i.e. when the distance to the nearest vector is between $\epsilon$ and $\delta$, the data structure can give any answer it likes.
   \end{itemize}
 
 \end{description}
