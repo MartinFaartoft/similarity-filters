@@ -105,14 +105,16 @@ def calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidat
     tn = 0
     fn = 0
     for close_element in generate_close_candidates(candidate, 0, closeness, number_of_candidates, wildcards):
-        if dsbf.is_close(close_element):
+        is_close, stats = dsbf.is_close_wildcards(close_element, wildcards)
+        if is_close:
             tp += 1
         else:
             fn += 1
 
     count_true = 0
     for far_element in generate_close_candidates(candidate, farness, l, number_of_candidates, wildcards):
-        if dsbf.is_close(far_element):
+        is_close, stats = dsbf.is_close_wildcards(far_element, wildcards)
+        if is_close:
             fp += 1
         else:
             tn += 1
@@ -171,7 +173,7 @@ def harvard_graph():
     l = 65536
     n = 1000
     number_of_candidates = 10000
-    no_wildcards = 7500
+    no_wildcards = 10
 
     wildcards = random.sample(range(l), no_wildcards)
     #wildcards = []
