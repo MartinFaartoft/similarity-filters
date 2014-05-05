@@ -92,8 +92,8 @@ In the following we investigate the Similarity Search problem. Different approac
 The Similarity Search problem can be stated as follows: Given a set of elements $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$ using a certain metric.
 
 %Real world example
-We consider a dataset consisting of job applicants, where each applicant in the set has the attributes $A$ \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\}.
-An example of one application of the Similarity Search problem can then be formulated as: "Given some employee with attributes $A$, does the dataset contain one or more applicants whose attributes match the employees on at least three of the attributes?"
+A real-word example could be a database of candidates used by a headhunting agency. Each candidate in the database would then have a set of attributes, for example \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, and \texttt{experience}\}.
+An application of Similarity Search can then be formulated as: "Given some person P, does the database contain one or more candidates, similar to P?"
 
 % Begræns problemet
 In the following we consider the Similarity Search problem for bit-vectors of length $l$, and Hamming distance as metric. This reduction maintains a high degree of generality, since elements from many domains can be encoded as bit-vectors.
@@ -113,11 +113,12 @@ A Bloom filter is an inexact representation of a set that allows for false posit
 
 
 \item \textbf{Locality-Sensitive Hashing}
+\label{sec:lsh}
 
 Ordinary hashing tries to minimize the probability of a collision, while Locality-Sensitive Hashing (LSH) attempts to maximize the collision probability for sufficiently similar elements.
 
-Not all similarity-measures admits LSH, but the Hamming distance metric on bit-vectors admits a particular simple one.
-Simply sample a number of bit positions from the input at random.
+LSH functions are not known for all similarity-measures, but for Hamming distance on bit-vectors, a particularly simple one is known.
+Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniformly at random. This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is desired (called locality collision in the following). Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to interpret the bit vector as an integer, and store that value in some array of size $m$. since $m < 2^{l'}$, we have from the pigeonhole principle, that multiple integers must hash to the same value. This type of collision is not desirable, and leads to an increase in false positives. We call this an accidental collision in the following.
 
 \item \textbf{$\epsilon$-closeness}
   \begin{itemize}
@@ -317,9 +318,9 @@ This is an improvement in two ways: The worst-case time complexity is now upper 
 The second approach has the following desirable properties:
 \paragraph{No prior knowledge of W required} At the time of construction, the DSBF requires no knowledge of what / how many bits will be wildcarded.
 
-\paragraph{No changes to 'insert'} The process of adding items to the DSBF remains unchanged.
+\paragraph{No changes to 'insert'} The process of adding items to the DSBF does not require modifications to support wildcard search.
 
-\paragraph{No additional memory required} Because the Wildcard search user multiple queries, no additional memory is required.
+\paragraph{No additional memory required} Because the wildcard search uses multiple queries, no additional memory is required.
 \\
 %drawbacks
 %increased query time-complexity
@@ -328,7 +329,7 @@ The second approach has the following desirable properties:
 And the following undesirable properties:
 \paragraph{Increased Time Complexity for Wildcard Search} Multiple queries for each LSH, means that the time complexity is no longer constant.
 
-\paragraph{Increased False Positive Rate} When querying each LSH multiple times, the chances of a false positive also increases.
+\paragraph{Increased False Positive Rate} When querying each LSH multiple times, the chances of a false positive also increases. The probability of an accidental collision\footnote{See Section \ref{sec:lsh}} is constant, so querying multiple times will increase the probability of a false positive.
 
 %experiments
 
