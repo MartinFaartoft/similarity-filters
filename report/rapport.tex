@@ -201,19 +201,19 @@ In the following, we will build upon the work of \cite{paper:harvard}.  Their wo
 
 We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme. We see no reason for LSH values to exhibit 'neighbour' locality, unless a difference happens to be in the least significant bit. 
 
-\section{Suggested Improvements}
-In the following, we present our contributions. They take the form of a series of suggested improvements and ideas for alternate usage.
 
-\subsection{Balanced LSH Bit Sampling} \label{sec:balanced}
+
+\section{Balanced LSH Bit Sampling} \label{sec:balanced}
 The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the k hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false answers.
 \\
 This can be remedied, by initializing the LSHs such that all bit positions are sampled equally often.
 In practice we do this by first preparing a vector of length $k \cdot l'$ by repeating the the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l'$, making sure that every index in the sub-vector is unique. This preprocessing step takes $O(l)$ time, and protects the DSBF from poor performance due to skewed sampling.
 
 Figure TODO shows an experiment run with Balanced bit sampling enabled (TODO some color) and disabled (TODO some other color), and shows that this optimization in some cases improves the performance of the DSBF, but never degrades it.
+\subsection{Experiments}
 \todo{produce and insert graphs here}
 
-\subsection{Eliminating False Negatives}
+\section{Eliminating False Negatives}
 Building on the previous idea from \ref{sec:balanced}, we suggest a way to eliminate false negatives from the DSBF data-structure.
 
 \paragraph{False Negatives} \label{p:fn}happen when a query element is within distance $\epsilon$ of an element in S, but is reported as being 'not close'. This happens when too many of the $k$ LSH functions report false, driving the number of trues below the threshold $t$. We know that each of the LSHs that report false, will sample at least one bit in which $q$ and every element $s \in S$ differ. Since q, by definition, is 'close' to some element $s \in S$, the maximum number of differences between $q$ and the closest element in $S$ is: $\epsilon_{abs} = \ceil{\epsilon \cdot l}$, where $l$ is the element length. Assuming that each is sampled an equal number of times (ensured by \ref{sec:balanced})): $l_n = \ceil{\frac{k \cdot l{'}}{l}}$, the maximum number of hash-functions that can report false is: $n_{false} = e_{abs} \cdot l_n$.
@@ -224,18 +224,17 @@ Lowering $t$ comes at a price, the lower the value of $t$, the higher the probab
 \[t > 0 \Leftrightarrow k > n_{false} \Leftrightarrow k > \epsilon_{abs} \cdot l_n\]
 This turns out to be a big deal, $k$ is usually below 100, $l_n$ can be kept small, but not smaller than 1. Those two bound $\epsilon_{abs}$, to definitely be below 100, which in turn makes it impossible for $\epsilon$ to be a constant fraction of $l$, for increasing $l$ values.
 
-\subsection{Wildcard Search}
+\section{Wildcard Search}
 The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". In the following. A natural extension to this, is to want to ignore certain bits in $q$, when calculating the similarity.
 
-If we examine the job applicants example from the introdution, one application of the Similarity Search with Wildcards can formulated as: Given some employee with the attributes \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\} does the dataset contain one or more applicants that match on at least two attributes while disregarding the attributes \texttt{gender} and \texttt{age}?.
+If we examine the job applicants example from the introdution, one application of the Similarity Search with Wildcards can formulated as: Given some employee with the attributes \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\} does the dataset contain one or more applicants that match on at least two attributes while disregarding the attributes \texttt{gender} and \texttt{age}?.\\
 
-\subsubsection*{The Extended Problem}
-The extended problem can be stated as follows:
-
-Let $W$ be a set of wildcard bit positions: $\forall w \in W (w \in \mathbb{Z}^+ \land w < l)$.\\
+%\subsection{The Extended Problem}
+The problem can be extended as follows: Let $W$ be a set of wildcard bit positions: 
+\[\forall w \in W (w \in \mathbb{Z}^+ \land w < l)\]
 Given a set of elements $S$, a query element $q$ and a set of wildcards $W$. Determine if there exists an element $s \in S$ that is 'close' to $q$, not counting differences on wildcard positions $W$. Where 'close' is defined as being within a given distance, $d$ using a given metric.
 
-\subsubsection*{Solving Wildcard Search}
+\subsection{Solving Wildcard Search}
 We have identified two approaches to solving the extended problem.
 \paragraph{The first approach} is to simply ignore the output from all LSH's that sample one or more wildcard bits. This can be done without modifying the insertion of elements into the DSBF, and without storing additional data. However, it raises some troublesome questions.
 
@@ -280,7 +279,7 @@ We note that to be in a worst case situation, all wildcard indices have to have 
 %no prior knowledge of W required
 %no changes to insert
 %no extra memory required
-\subsubsection*{Properties of Wildcard Search}
+\subsection{Properties of Wildcard Search}
 The second approach has the following desirable properties:
 \paragraph{No prior knowledge of W required} At the time of construction, the DSBF requires no knowledge of what / how many bits will be wildcarded.
 
@@ -298,7 +297,7 @@ And the following undesirable properties:
 \paragraph{Increased False Positive Rate} When querying each LSH multiple times, the chances of a false positive also increases. The probability of an accidental collision\footnote{See Section \ref{sec:lsh}} is constant, so querying multiple times will increase the probability of a false positive.
 
 
-\subsubsection*{Choosing the Number of Wildcarded Bits}
+\subsection{Choosing the Number of Wildcarded Bits}
 As shown earlier in \ref{lbl:worst_case}, the query time grows exponentially with the number of wildcarded bits sampled by each LSH. This motivates us to keep that number small. The expected number of wildcarded bits sampled by some LSH is given by
 \[E(X_w)=l' \cdot \frac{|W|}{l}\]
 If we want each LSH to expectedly sample $b$ wildcarded bits, we can choose $|W|$ such that:
@@ -307,7 +306,7 @@ From the above we see that if $b = 1$, the expected runtime per query is only a 
 
 %experiments
 
-\subsubsection*{Evaluating Wildcard Search}
+\subsection{Experiments}
 In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the solid black line represents our implementation Kirsch and Mitezenmachers approach, and the striped red line represents our extension with 1000 wildcard charachters per element. We see that the false negative rates are close, but the false positive rates are higher for a when increasing the number of wildcards. This is not due to a new kind of false positivies but rather due to the fact that when using this approach we are more likely to have multiple elements appear as a single element, and thus returning a positive. We see that all the plots has a spike at space usage $= 0.6$. This is due to the way the threshold is set, which is based on our number of hash functions. At this point the treshold needed to report a positive is incremented, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}. Graphs for true postivie rate and false can be found in Appendix \ref{appendix:experiments} but are also very close.
 
 \todo{Det kunne være mere interessant at have antal bits på x-aksen.}
