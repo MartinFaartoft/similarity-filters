@@ -304,6 +304,8 @@ The above requires $2^{min(|W|, l')}$ queries in the worst case.
 This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH hashes all the bit positions in $W$.
 \todo{analyse af average case time complexity goes here?}
 
+We note that to be in a worst case situation, all wildcard indices have to have to be sampled by a single LSH. Due to the nature of randomization, this will only happen with a low probability. On average it will be more likely that the wildcard indices are evenly distributed among the LSHs.
+
 %advantages
 %no prior knowledge of W required
 %no changes to insert
