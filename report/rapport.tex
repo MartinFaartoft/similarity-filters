@@ -140,7 +140,7 @@ Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniform
 \paragraph{Brute force}
 The most obvious idea for solving the Similarity Search problem, is brute force. Store the elements $S$ in a linked list. When a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
 
-This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications. \todo{flet lidt om jobkandidat IRL snask ind her}
+This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
 
 \paragraph{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both.
 
@@ -199,19 +199,39 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 \todo{flyt til starten af næste section}
 In the following, we will build upon the work of \cite{paper:harvard}.  Their work achieves robustness by using thresholds and the way they present their results allows for easy comparison.\\
 
-We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme. We see no reason for LSH values to exhibit 'neighbour' locality, unless a difference happens to be in the least significant bit. 
+We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme. We see no reason for LSH values to exhibit 'neighbour' locality, unless a difference happens to be in the least significant bit.
 
 
 
 \section{Balanced LSH Bit Sampling} \label{sec:balanced}
-The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the k hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false answers.
+The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the $k$ hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false answers.
 \\
 This can be remedied, by initializing the LSHs such that all bit positions are sampled equally often.
 In practice we do this by first preparing a vector of length $k \cdot l'$ by repeating the the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l'$, making sure that every index in the sub-vector is unique. This preprocessing step takes $O(l)$ time, and protects the DSBF from poor performance due to skewed sampling.
 
-Figure TODO shows an experiment run with Balanced bit sampling enabled (TODO some color) and disabled (TODO some other color), and shows that this optimization in some cases improves the performance of the DSBF, but never degrades it.
+
 \subsection{Experiments}
-\todo{produce and insert graphs here}
+Figure \ref{bitbalance-fpnr} shows an experiment run with Balanced bit sampling enabled (illustrated by the solid black line) and disabled (illustrated by the dashed red line), and shows that this optimization in some cases improves the performance of the DSBF.
+
+In practice, when $l$ get sufficiently large, the probability that a DSBF without bit balancing will produce a skewed sampling becomes infinitesimal.
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{bitbalancing_TPR1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{bitbalancing_FPR1}
+\end{subfigure}
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{bitbalancing_FNR1}
+\end{subfigure}
+\caption{The observed true positive, false positive and false negative rates for $n$ = 1000, $l$ = 1000, $\epsilon$ = 0.1, and $\sigma$ = 0.4, with LSH bit-balancing enabled and disabled}
+\label{fig:bitbalance-fpnr}
+\end{figure}
+
 
 \section{Eliminating False Negatives}
 Building on the previous idea from \ref{sec:balanced}, we suggest a way to eliminate false negatives from the DSBF data-structure.
@@ -230,7 +250,7 @@ The DSBF structure can, as we have seen, be used to answer questions of the form
 If we examine the job applicants example from the introdution, one application of the Similarity Search with Wildcards can formulated as: Given some employee with the attributes \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\} does the dataset contain one or more applicants that match on at least two attributes while disregarding the attributes \texttt{gender} and \texttt{age}?.\\
 
 %\subsection{The Extended Problem}
-The problem can be extended as follows: Let $W$ be a set of wildcard bit positions: 
+The problem can be extended as follows: Let $W$ be a set of wildcard bit positions:
 \[\forall w \in W (w \in \mathbb{Z}^+ \land w < l)\]
 Given a set of elements $S$, a query element $q$ and a set of wildcards $W$. Determine if there exists an element $s \in S$ that is 'close' to $q$, not counting differences on wildcard positions $W$. Where 'close' is defined as being within a given distance, $d$ using a given metric.
 
@@ -251,7 +271,9 @@ Since the last two bits are wildcarded, we generate all possible variations of $
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
 We now query the DSBF with each of the variations, and if any of them returns 'close', we report 'close' to the original query $q, W$.
 
-This requires $2^{|W|}$ queries in the worst case, and half \todo{det med half gælder kun hvis vi ved at den er close}of that in the average case, assuming we stop querying after receiving the first 'close' response. Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
+This requires $2^{|W|}$ queries in the worst case, and half \todo{det med half gælder kun hvis vi ved at den er close}of that in the average case, assuming we 'short-curcuit' (stop querying) after receiving the first 'close' response. 
+
+Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
 
 This result is reasonably good for a small number of wildcards, but we can do better if we leverage the inner workings of the DSBF, instead of treating it as a black box.
 When the DSBF is queried, it hashes the query element $q$ using $k$ different LSH functions, and checks the corresponding locations in the internal memory. Each of the $k$ LSH functions sample a different subset $l'$ out of the total $l$ bits in $q$. This means that when the DSBF is queried multiple times with different variations of $q$, some of the LSH functions will do repeated work if they do not sample any of the wildcarded bits.
@@ -285,6 +307,8 @@ The second approach has the following desirable properties:
 
 \paragraph{No changes to 'insert'} The process of adding items to the DSBF does not require modifications to support wildcard search.
 
+\paragraph{Highly parallelizable} Each of the $k$ LSH's can be queried in parallel, no locking or synchronization is required since data is only read, never written.
+
 \paragraph{No additional memory required} Because the wildcard search uses multiple queries, no additional memory is required.
 \\
 %drawbacks
@@ -302,14 +326,14 @@ As shown earlier in \ref{lbl:worst_case}, the query time grows exponentially wit
 \[E(X_w)=l' \cdot \frac{|W|}{l}\]
 If we want each LSH to expectedly sample $b$ wildcarded bits, we can choose $|W|$ such that:
 \[E(X_w)=b \Rightarrow b = l' \cdot \frac{|W|}{l} \Leftrightarrow |W| = \frac{b \cdot l}{l'}\]
-From the above we see that if $b = 1$, the expected runtime per query is only a constant factor worse than a DSBF query without wildcards. 
+From the above we see that if $b = 1$, the expected runtime per query is only a constant factor worse than a DSBF query without wildcards.
 
 %experiments
 
 \subsection{Experiments}
+%precision
 In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the solid black line represents our implementation Kirsch and Mitezenmachers approach, and the striped red line represents our extension with 1000 wildcard charachters per element. We see that the false negative rates are close, but the false positive rates are higher for a when increasing the number of wildcards. This is not due to a new kind of false positivies but rather due to the fact that when using this approach we are more likely to have multiple elements appear as a single element, and thus returning a positive. We see that all the plots has a spike at space usage $= 0.6$. This is due to the way the threshold is set, which is based on our number of hash functions. At this point the treshold needed to report a positive is incremented, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}. Graphs for true postivie rate and false can be found in Appendix \ref{appendix:experiments} but are also very close.
 
-\todo{Det kunne være mere interessant at have antal bits på x-aksen.}
 \begin{figure}[H]
 \centering
 \begin{subfigure}{.5\textwidth}
@@ -320,13 +344,37 @@ In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the s
   \centering
   \includegraphics[width=.95\linewidth]{wildcard_1000_FNR1}
 \end{subfigure}
-\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0., and $\sigma$ = 0.4, with 2 different lengths of $W$}
+\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0.1, and $\sigma$ = 0.4, with 2 different lengths of $W$}
 \label{fig:w-fpnr}
 \end{figure}
 
+%performance
+We have implemented wildcard search, and measured the actual performance of querying the DSBF with wildcards. The following experiments are carried out with the values: $l = 100, n = 100, k = 20, \epsilon=0.1, \delta=0.4$.
+
+Figure \ref{fig:w-perf}a shows the performance of naïve approach 2 (red) against improved approach 2 (black), as the fraction of wildcarded bits increases. The graph shows that they both exhibit exponential growth, as expected, but that the improved version grows significantly slower, allowing for more wildcarded bits without significant loss of performance.
+
+Figure \ref{fig:w-perf}b shows the performance gained by short-circuiting sub-queries. As expected, it exhibits the same asymptotical growth, but improves the performance slightly overall.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \label{fig:w-query-performance}
+  \centering
+  \includegraphics[width=.95\linewidth]{wildcard_1000_FPR1}
+  \caption{}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \label{fig:w-short-circuit}
+  \centering
+  \includegraphics[width=.95\linewidth]{wildcard_1000_FNR1}
+  \caption{}
+\end{subfigure}
+  \caption{Wildcard Search - Performance measurements}
+  \label{fig:w-perf}
+\end{figure}
 
 
-\section{Conclusions and Further Work}
+\section{Conclusion}
 % Vi har ændret på pladsen ved at gøre k større. Ville vi få værre/bedre resultater hvis vi varierede $m$?
 \newpage
 
