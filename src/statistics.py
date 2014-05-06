@@ -8,7 +8,7 @@ randBinList = lambda n: [random.randint(0, 1) for b in range(1, n+1)]
 prime_100 = 2147483659
 
 seed = 98457198
-random.seed(seed)
+#random.seed(seed)
 
 #number_of_elements = 1000
 #number_of_candidates = 1000
@@ -173,10 +173,11 @@ def pagh_graph():
 def harvard_graph():
     epsilon = 0.1
     delta = 0.4
-    l = 100
-    n = 10
-    number_of_candidates = 100
-    no_wildcards = 50
+    l = 1000
+    n = 1000
+    number_of_candidates = 500
+    no_wildcards = 0
+    no_exp = 20
 
     wildcards = random.sample(range(l), no_wildcards)
     #wildcards = []
@@ -185,23 +186,32 @@ def harvard_graph():
     farness = int(math.floor(l * delta))
     data = []
 
-    for step_k in range(10, 31, 10):
-        print "K=", step_k
-        epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction = calculate_harvard_params(epsilon, delta, l, step_k, n)
-        dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
+    for step_k in range(1, 30, 1):
         data_row = {}
+        data_row['ratios'] = []
+        data_row['parameters'] = []
+        data_row['close_stats'] = []
+        data_row['far_stats'] = []
+        print "K=", step_k
 
-        ratios, stats = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates, wildcards)
-        close_stats, far_stats = stats
-        data_row['ratios'] = ratios
-        data_row['parameters'] = k, space, total_input_size, fraction, l, k, n, l_prime
-        data_row['close_stats'] = close_stats
-        data_row['far_stats'] = far_stats
+        for v in range(no_exp):
+            print "no_exp", v
+
+            epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction = calculate_harvard_params(epsilon, delta, l, step_k, n)
+            dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
+
+
+            ratios, stats = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates, wildcards)
+            close_stats, far_stats = stats
+            data_row['ratios'].append(ratios)
+            data_row['parameters'].append((k, space, total_input_size, fraction, l, k, n, l_prime))
+            data_row['close_stats'].append(close_stats)
+            data_row['far_stats'].append(far_stats)
         data.append(data_row)
 
     import json
 
-    with open('wildcard/harvard_graph_with_wildcards_%d.json' % no_wildcards, 'w') as outfile:
+    with open('bitbalancing/with.json', 'w') as outfile:
         json.dump(data, outfile)
 
 def eliminate_false_negatives_experiment():
