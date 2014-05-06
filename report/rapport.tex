@@ -140,7 +140,7 @@ Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniform
 \paragraph{Brute force}
 The most obvious idea for solving the Similarity Search problem, is brute force. Store the elements $S$ in a linked list. When a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
 
-This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications. \todo{flet lidt om jobkandidat IRL snask ind her}
+This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
 
 \paragraph{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both.
 
@@ -199,7 +199,7 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 \todo{flyt til starten af næste section}
 In the following, we will build upon the work of \cite{paper:harvard}.  Their work achieves robustness by using thresholds and the way they present their results allows for easy comparison.\\
 
-We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme. We see no reason for LSH values to exhibit 'neighbour' locality, unless a difference happens to be in the least significant bit. 
+We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme. We see no reason for LSH values to exhibit 'neighbour' locality, unless a difference happens to be in the least significant bit.
 
 
 
@@ -230,7 +230,7 @@ The DSBF structure can, as we have seen, be used to answer questions of the form
 If we examine the job applicants example from the introdution, one application of the Similarity Search with Wildcards can formulated as: Given some employee with the attributes \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\} does the dataset contain one or more applicants that match on at least two attributes while disregarding the attributes \texttt{gender} and \texttt{age}?.\\
 
 %\subsection{The Extended Problem}
-The problem can be extended as follows: Let $W$ be a set of wildcard bit positions: 
+The problem can be extended as follows: Let $W$ be a set of wildcard bit positions:
 \[\forall w \in W (w \in \mathbb{Z}^+ \land w < l)\]
 Given a set of elements $S$, a query element $q$ and a set of wildcards $W$. Determine if there exists an element $s \in S$ that is 'close' to $q$, not counting differences on wildcard positions $W$. Where 'close' is defined as being within a given distance, $d$ using a given metric.
 
@@ -302,7 +302,7 @@ As shown earlier in \ref{lbl:worst_case}, the query time grows exponentially wit
 \[E(X_w)=l' \cdot \frac{|W|}{l}\]
 If we want each LSH to expectedly sample $b$ wildcarded bits, we can choose $|W|$ such that:
 \[E(X_w)=b \Rightarrow b = l' \cdot \frac{|W|}{l} \Leftrightarrow |W| = \frac{b \cdot l}{l'}\]
-From the above we see that if $b = 1$, the expected runtime per query is only a constant factor worse than a DSBF query without wildcards. 
+From the above we see that if $b = 1$, the expected runtime per query is only a constant factor worse than a DSBF query without wildcards.
 
 %experiments
 
@@ -326,7 +326,7 @@ In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the s
 
 
 
-\section{Conclusions and Further Work}
+\section{Conclusion}
 % Vi har ændret på pladsen ved at gøre k større. Ville vi få værre/bedre resultater hvis vi varierede $m$?
 \newpage
 
