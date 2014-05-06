@@ -204,9 +204,11 @@ We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They 
 
 
 \section{Balanced LSH Bit Sampling} \label{sec:balanced}
+
 The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the $k$ hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false answers.
-\\
-This can be remedied, by initializing the LSHs such that all bit positions are sampled equally often.
+Inspired by our supervisor we investigate how remedied.
+
+By initializing the LSHs such that all bit positions are sampled equally often.
 In practice we do this by first preparing a vector of length $k \cdot l'$ by repeating the the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l'$, making sure that every index in the sub-vector is unique. This preprocessing step takes $O(l)$ time, and protects the DSBF from poor performance due to skewed sampling.
 
 
@@ -234,7 +236,7 @@ In practice, when $l$ get sufficiently large, the probability that a DSBF withou
 
 
 \section{Eliminating False Negatives}
-Building on the previous idea from \ref{sec:balanced}, we suggest a way to eliminate false negatives from the DSBF data-structure.
+Building on the previous idea from \ref{sec:balanced}, we present a method to eliminate false negatives from the DSBF data-structure.
 
 \paragraph{False Negatives} \label{p:fn}happen when a query element is within distance $\epsilon$ of an element in S, but is reported as being 'not close'. This happens when too many of the $k$ LSH functions report false, driving the number of trues below the threshold $t$. We know that each of the LSHs that report false, will sample at least one bit in which $q$ and every element $s \in S$ differ. Since q, by definition, is 'close' to some element $s \in S$, the maximum number of differences between $q$ and the closest element in $S$ is: $\epsilon_{abs} = \ceil{\epsilon \cdot l}$, where $l$ is the element length. Assuming that each is sampled an equal number of times (ensured by \ref{sec:balanced})): $l_n = \ceil{\frac{k \cdot l{'}}{l}}$, the maximum number of hash-functions that can report false is: $n_{false} = e_{abs} \cdot l_n$.
 
