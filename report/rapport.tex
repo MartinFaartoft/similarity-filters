@@ -196,24 +196,6 @@ In the following, we will build upon the work of \cite{paper:harvard}.  Their wo
 
 We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme. We see no reason for LSH values to exhibit 'neighbour' locality, unless a difference happens to be in the least significant bit. 
 
-
-\section{Experiments} %TODO flyt ned efter our contribution, eller hvad det kommer til at hedde
-In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the solid black line represents our implementation Kirsch and Mitezenmachers approach, and the striped red line represents our extension with 1000 wildcard charachters per element. We see that the false negative rates are close, but the false positive rates are higher for a when increasing the number of wildcards. This is not due to a new kind of false positivies but rather due to the fact that when using this approach we are more likely to have multiple elements appear as a single element, and thus returning a positive. We see that all the plots has a spike at $space usage = 0.6$. This is due to the way the threshold is set, which is based on our number of hash functions. At this point the treshold needed to report a positive is incremented, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}. Graphs for true postivie rate and and false can be found in Appendix \ref{appendix:experiments} but are also very close.
-
-\todo{Det kunne være mere interessant at have antal bits på x-aksen.}
-\begin{figure}[H]
-\centering
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.95\linewidth]{wildcard_1000_FPR1}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.95\linewidth]{wildcard_1000_FNR1}
-\end{subfigure}
-\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0., and $\sigma$ = 0.4, with 2 different lengths of $W$}
-\label{fig:w-fpnr}
-\end{figure}
 %\end{figure}
 %\begin{figure}[H]
 %\centering
@@ -339,9 +321,25 @@ If we want each LSH to expectedly sample $b$ wildcarded bits, we can choose $|W|
 \[E(X_w)=b \Rightarrow b = l' \cdot \frac{|W|}{l} \Leftrightarrow |W| = \frac{b \cdot l}{l'}\]
 From the above we see that if $b = 1$, the expected runtime per query is only a constant factor worse than a DSBF query without wildcards. 
 
-
-
 %experiments
+
+\subsubsection*{Evaluating Wildcard Search}
+In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the solid black line represents our implementation Kirsch and Mitezenmachers approach, and the striped red line represents our extension with 1000 wildcard charachters per element. We see that the false negative rates are close, but the false positive rates are higher for a when increasing the number of wildcards. This is not due to a new kind of false positivies but rather due to the fact that when using this approach we are more likely to have multiple elements appear as a single element, and thus returning a positive. We see that all the plots has a spike at space usage $= 0.6$. This is due to the way the threshold is set, which is based on our number of hash functions. At this point the treshold needed to report a positive is incremented, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}. Graphs for true postivie rate and false can be found in Appendix \ref{appendix:experiments} but are also very close.
+
+\todo{Det kunne være mere interessant at have antal bits på x-aksen.}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{wildcard_1000_FPR1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{wildcard_1000_FNR1}
+\end{subfigure}
+\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0., and $\sigma$ = 0.4, with 2 different lengths of $W$}
+\label{fig:w-fpnr}
+\end{figure}
 
 
 
