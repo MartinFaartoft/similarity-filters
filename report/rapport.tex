@@ -273,7 +273,9 @@ Since the last two bits are wildcarded, we generate all possible variations of $
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
 We now query the DSBF with each of the variations, and if any of them returns 'close', we report 'close' to the original query $q, W$.
 
-This requires $2^{|W|}$ queries in the worst case, and half \todo{det med half gælder kun hvis vi ved at den er close}of that in the average case, assuming we stop querying after receiving the first 'close' response. Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
+This requires $2^{|W|}$ queries in the worst case, and half \todo{det med half gælder kun hvis vi ved at den er close}of that in the average case, assuming we 'short-curcuit' (stop querying) after receiving the first 'close' response. 
+
+Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
 
 This result is reasonably good for a small number of wildcards, but we can do better if we leverage the inner workings of the DSBF, instead of treating it as a black box.
 When the DSBF is queried, it hashes the query element $q$ using $k$ different LSH functions, and checks the corresponding locations in the internal memory. Each of the $k$ LSH functions sample a different subset $l'$ out of the total $l$ bits in $q$. This means that when the DSBF is queried multiple times with different variations of $q$, some of the LSH functions will do repeated work if they do not sample any of the wildcarded bits.
@@ -307,6 +309,8 @@ The second approach has the following desirable properties:
 
 \paragraph{No changes to 'insert'} The process of adding items to the DSBF does not require modifications to support wildcard search.
 
+\paragraph{Highly parallelizable} Each of the $k$ LSH's can be queried in parallel, no locking or synchronization is required since data is only read, never written.
+
 \paragraph{No additional memory required} Because the wildcard search uses multiple queries, no additional memory is required.
 \\
 %drawbacks
@@ -329,6 +333,7 @@ From the above we see that if $b = 1$, the expected runtime per query is only a 
 %experiments
 
 \subsection{Experiments}
+%precision
 In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the solid black line represents our implementation Kirsch and Mitezenmachers approach, and the striped red line represents our extension with 1000 wildcard charachters per element. We see that the false negative rates are close, but the false positive rates are higher for a when increasing the number of wildcards. This is not due to a new kind of false positivies but rather due to the fact that when using this approach we are more likely to have multiple elements appear as a single element, and thus returning a positive. We see that all the plots has a spike at space usage $= 0.6$. This is due to the way the threshold is set, which is based on our number of hash functions. At this point the treshold needed to report a positive is incremented, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}. Graphs for true postivie rate and false can be found in Appendix \ref{appendix:experiments} but are also very close.
 
 \begin{figure}[H]
@@ -341,10 +346,34 @@ In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the s
   \centering
   \includegraphics[width=.95\linewidth]{wildcard_1000_FNR1}
 \end{subfigure}
-\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0., and $\sigma$ = 0.4, with 2 different lengths of $W$}
+\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0.1, and $\sigma$ = 0.4, with 2 different lengths of $W$}
 \label{fig:w-fpnr}
 \end{figure}
 
+%performance
+We have implemented wildcard search, and measured the actual performance of querying the DSBF with wildcards. The following experiments are carried out with the values: $l = 100, n = 100, k = 20, \epsilon=0.1, \delta=0.4$.
+
+Figure \ref{fig:w-perf}a shows the performance of naïve approach 2 (red) against improved approach 2 (black), as the fraction of wildcarded bits increases. The graph shows that they both exhibit exponential growth, as expected, but that the improved version grows significantly slower, allowing for more wildcarded bits without significant loss of performance.
+
+Figure \ref{fig:w-perf}b shows the performance gained by short-circuiting sub-queries. As expected, it exhibits the same asymptotical growth, but improves the performance slightly overall.
+
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \label{fig:w-query-performance}
+  \centering
+  \includegraphics[width=.95\linewidth]{wildcard_1000_FPR1}
+  \caption{}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \label{fig:w-short-circuit}
+  \centering
+  \includegraphics[width=.95\linewidth]{wildcard_1000_FNR1}
+  \caption{}
+\end{subfigure}
+  \caption{Wildcard Search - Performance measurements}
+  \label{fig:w-perf}
+\end{figure}
 
 
 \section{Conclusion}
