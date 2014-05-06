@@ -102,20 +102,39 @@ for frame in data:
 #plot that thing
 #print y_smart_actual
 
+#convert x to fraction
+print x
+x = [val / 100.0 for val in x]
+print x
+
 from pylab import *
+
+figure(0)
+b, = plot(x, y_close_smart_worst_log, 'r')
+c, = plot(x, y_close_smart_actual_log, 'k--')
+#d, = plot(x, y_far_smart_worst, 'g')
+#e, = plot(x, y_far_smart_actual_log, 'k:')
+
+legend([b,c], ['no short-circuit', 'short-circuit'])
+title('Wildcard query performance - Effects of short-circuiting')
+xlabel('Fraction of wildcarded bits')
+ylabel('Log2(# of sub-queries)')
+
+savefig('work_over_wildcards_short-circuit.eps')
+show()
 
 
 figure(1)
-#a, = plot(x, y_naive_worst_log, 'k')
-b, = plot(x, y_close_smart_worst_log, 'k')
-c, = plot(x, y_close_smart_actual_log, 'k--')
+a, = plot(x, y_naive_worst_log, 'r')
+b, = plot(x, y_close_smart_worst_log, 'k--')
+#c, = plot(x, y_close_smart_actual_log, 'k--')
 #d, = plot(x, y_far_smart_worst, 'g')
-e, = plot(x, y_far_smart_actual_log, 'k:')
+#e, = plot(x, y_far_smart_actual_log, 'k:')
 
-#legend([a,b], ['0', '1000'])
-xlabel('W')
-ylabel('Query time')
+legend([a,b], ['Naive', 'Improved'])
+xlabel('Fraction of wildcarded bits')
+ylabel('Log2(# of sub-queries)')
 #ylim(0,0.030)
-title('Query time as a function of wildcards')
-savefig('work_over_wildcards.eps')
+title('Wildcard query performance - Effects of Improving approach 2')
+savefig('work_over_wildcards_approaches.eps')
 show()
