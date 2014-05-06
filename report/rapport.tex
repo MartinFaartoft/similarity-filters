@@ -123,13 +123,13 @@ A Bloom filter is an inexact representation of a set that allows for false posit
 Ordinary hashing tries to minimize the probability of a collision, while Locality-Sensitive Hashing (LSH) attempts to maximize the collision probability for sufficiently similar elements.
 
 LSH functions are not known for all similarity-measures, but for Hamming distance on bit-vectors, a particularly simple one is known.
-Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniformly at random. This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is desired (called locality collision in the following). Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to interpret the bit vector as an integer, and store that value in some array of size $m$. since $m < 2^{l'}$, we have from the pigeonhole principle, that multiple integers must hash to the same value. This type of collision is not desirable, and leads to an increase in false positives. We call this an accidental collision in the following.
+Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniformly at random. This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is desired (called locality collision in the following). Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to hash the bit vector to an integer, and use that value as an index in some array of size $m$. When $m < 2^{l'}$, we have from the pigeonhole principle, that multiple bit vectors must hash to the same value. This type of collision is not desirable, and leads to an increase in false positives. We call this an accidental collision in the following.
 
 \item \textbf{$\epsilon$-closeness}
   \begin{itemize}
     \item If an element $s \in S$ differs from $x$ in at most an $\epsilon$-fraction of the bits, it is said to be $\epsilon$-close to $x$. The data structure must return “close”.
     \item If every vector $s \in S$ differs from $x$ in at least a $\delta$-fraction of the bits, then the data structure should return 'not close'.
-    \item In all other cases, i.e. when the distance to the nearest vector is between $\epsilon$ and $\delta$, the data structure can give any answer it likes.
+    \item In all other cases, i.e. when the distance to the nearest vector is between $\epsilon$ and $\delta$, the data structure can return either of the two.
   \end{itemize}
 
 \end{description}
@@ -144,7 +144,7 @@ This will give a correct answer, and will work well for small problem instances,
 
 \paragraph{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both.
 
-While keeping in mind that standard Bloom filters only answer exact membership, we see that one way of achieving this is by relying on extra insertions. Everytime an element is added to the Bloom filter, all elements within distance $d$ are generated and added in addition to the original element.
+While keeping in mind that standard Bloom filters only answer exact membership, we see that one way of achieving this is by relying on extra insertions. Every time an element is added to the Bloom filter, all elements within distance $d$ are generated and added in addition to the original element.
 
 Another way to go around this is by sacrificing time. This can be done by still doing normal insertions but instead querying for all elements with distance $d$ of the element we are comparing to. This approach has the benefit of still being space efficient but will cause an exponential blowup of the running time.
 
@@ -158,14 +158,13 @@ Another way to go around this is by sacrificing time. This can be done by still 
 \subsection{Distance-Sensitive Bloom Filters}
 Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. The aim is to expand upon classical Bloom filters, enabling them to answer the question: "Does a set contain an element similar to a given element?". They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
 
-The way they accomplish this is by using locality sensitive hashing algorithms (TODO REF), such that two elements that are sufficiently similar will, with a high probability, hash to the same value. They also use a partitioned Bloom filter, which is a like a standard Bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
+The way they accomplish this is by using locality sensitive hashing algorithms, such that two elements that are sufficiently similar will, with a high probability, hash to the same value. They also use a partitioned Bloom filter, which is a like a standard Bloom filter except each locality sensitive hashing algorithm maps into its own bit array, instead of all the hashing algorithms share the same bit array.
 
-When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold (T), that is set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false positives using this data structure.
+When querying the Bloom filter for an approximate match, the element is hashed with all the hashing algorithms, and the corresponding indiceses are checked. If there are more bits, than a specified threshold ($t$), that is set to 1, it returns that the data contains an element that is close to the query element. The use of a threshold is the reason why it is possible to have false negatives using this data structure.
 
 A disadvantage to this approach, compared to a classical Bloom filter, is that it introduces the possibility of false negatives.
 
-In their experiments they manage to achieve false postive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, and 0.016\% and 0.003\% for 1000. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space.
-
+In their experiments they manage to achieve false postive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, with $\epsilon = 0.1$ and $\delta = 0.4$. For 10000 they achieve  0.016\% false positive rate and 0.003\% false negative rate, with with $\epsilon = 0.05$ and $\delta = 0.4$. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space. \todo{Kan I ikke se på de resultater også. Jeg synes ikke det giver mening}
 
 
 \subsection{Locality-Sensitive Bloom Filter for Approximate Membership Query}
@@ -211,7 +210,7 @@ In practice we do this by first preparing a vector of length $k \cdot l'$ by rep
 
 
 \subsection{Experiments}
-Figure \ref{bitbalance-fpnr} shows an experiment run with Balanced bit sampling enabled (illustrated by the solid black line) and disabled (illustrated by the dashed red line), and shows that this optimization in some cases improves the performance of the DSBF.
+Figure \ref{fig:bitbalance-fpnr} shows an experiment run with Balanced bit sampling enabled (illustrated by the solid black line) and disabled (illustrated by the dashed red line), and shows that this optimization in some cases improves the performance of the DSBF.
 
 In practice, when $l$ get sufficiently large, the probability that a DSBF without bit balancing will produce a skewed sampling becomes infinitesimal.
 \begin{figure}[H]
@@ -332,7 +331,7 @@ From the above we see that if $b = 1$, the expected runtime per query is only a 
 
 \subsection{Experiments}
 %precision
-In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the solid black line represents our implementation Kirsch and Mitezenmachers approach, and the striped red line represents our extension with 1000 wildcard charachters per element. We see that the false negative rates are close, but the false positive rates are higher for a when increasing the number of wildcards. This is not due to a new kind of false positivies but rather due to the fact that when using this approach we are more likely to have multiple elements appear as a single element, and thus returning a positive. We see that all the plots has a spike at space usage $= 0.6$. This is due to the way the threshold is set, which is based on our number of hash functions. At this point the treshold needed to report a positive is incremented, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}. Graphs for true postivie rate and false can be found in Appendix \ref{appendix:experiments} but are also very close.
+In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the solid black line represents our implementation Kirsch and Mitezenmachers approach, and the dashed red line represents our extension with 1000 wildcard charachters per element. We see that the false negative rates are close, but the false positive rates are higher for a when increasing the number of wildcards. This is not due to a new kind of false positivies but rather due to the fact that when using this approach we are more likely to have multiple elements appear as a single element, and thus returning a positive. We see that all the plots has a spike at space usage $= 0.6$. This is due to the way the threshold is set, which is based on our number of hash functions. At this point the treshold needed to report a positive is incremented, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}. Graphs for true postivie rate and false can be found in Appendix \ref{appendix:experiments} but are also very close.
 
 \begin{figure}[H]
 \centering
