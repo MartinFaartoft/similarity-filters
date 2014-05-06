@@ -79,7 +79,12 @@
 \thispagestyle{empty}
 \setcounter{page}{1}
 \begin{abstract}
-The abstract goes here
+In this report we build upon the work done in "Distance-Sensitive Bloom Filters" by Adam Kirsch and Michael Mitzenmacher, by extending their Distance-sensitive Bloom filters in 3 ways:
+By eliminating the possiblity of false negatives, by enabling balanced bit sampling for thee hash functions used in the filter, and by enabling wildcard searches. This extension requires no knowledge of wildcards on insert time.
+
+When eliminating false negatives we end up with too many false positives to make it a viable approach for any real world scenario.
+In regards to balanced bit sampling we achieve better results when working with smaller elements, as the nature of randomization favors longer input. It does however make it possible to give a guarentees in regards to how many times bits are sampled.
+Our implementation of wildcard search, increases false positives XX\%, but does not degrade any other accuracy measure. Query time does however go from constant time to exponential in the worst case. The worst case running time is rarely the case.
 \end{abstract}
 
 \newpage
@@ -198,33 +203,37 @@ We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They 
 
 
 \section{Experiments} %TODO flyt ned efter our contribution, eller hvad det kommer til at hedde
+In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the solid black line represents our implementation of Kirsch and Mitezenmachers approach, and the striped red line represents our extension with 1000 wildcard charachters per element. We see that the false negative rates are close, but the false positive rates are higher when increasing the number of wildcards. This is not due to a new kind of false positivies but rather due to the fact that when using this approach we are more likely to have multiple elements appear as a single element, and thus returning a false positive. We see that all the plots has a spike at $space usage = 0.6$. This is due to the way the threshold is set, which is based on our number of hash functions. At this point the treshold needed to report a positive is incremented, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}. Graphs for true postivie rate and and false can be found in Appendix \ref{appendix:experiments} but are also very close.
+
 \todo{Det kunne være mere interessant at have antal bits på x-aksen.}
 \begin{figure}[H]
 \centering
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.95\linewidth]{FPR1}
+  \includegraphics[width=.95\linewidth]{wildcard_1000_FPR1}
 \end{subfigure}%
 \begin{subfigure}{.5\textwidth}
   \centering
-  \includegraphics[width=.95\linewidth]{FNR1}
+  \includegraphics[width=.95\linewidth]{wildcard_1000_FNR1}
 \end{subfigure}
-\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0.1, and $\sigma$ = 0.4}
-\label{fig:n1000}
+\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0., and $\sigma$ = 0.4, with 2 different lengths of $W$}
+\label{fig:w-fpnr}
 \end{figure}
-\begin{figure}[H]
-\centering
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.95\linewidth]{FPR2}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-  \includegraphics[width=.95\linewidth]{FNR2}
-\end{subfigure}
-\caption{The observed false positive and false negative rates for $n$ = 10000, $l$ = 65536, $\epsilon$ = 0.05, and $\sigma$ = 0.4}
-\label{fig:n10000}
-\end{figure}
+%\end{figure}
+%\begin{figure}[H]
+%\centering
+%\begin{subfigure}{.5\textwidth}
+%  \centering
+%  \includegraphics[width=.95\linewidth]{FPR2}
+%\end{subfigure}%
+%\begin{subfigure}{.5\textwidth}
+%  \centering
+%  \includegraphics[width=.95\linewidth]{FNR2}
+%\end{subfigure}
+%\caption{The observed false positive and false negative rates for $n$ = 10000, $l$ = 65536, $\epsilon$ = 0.05, and $\sigma$ = 0.4}
+%\label{fig:n10000}
+%\end{figure}
+
 
 %tegn nogle grafer
 
@@ -304,6 +313,8 @@ The above requires $2^{min(|W|, l')}$ queries in the worst case.
 This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH hashes all the bit positions in $W$.
 \todo{analyse af average case time complexity goes here?}
 
+We note that to be in a worst case situation, all wildcard indices have to have to be sampled by a single LSH. Due to the nature of randomization, this will only happen with a low probability. On average it will be more likely that the wildcard indices are evenly distributed among the LSHs.
+
 %advantages
 %no prior knowledge of W required
 %no changes to insert
@@ -340,6 +351,7 @@ From the above we see that if $b = 1$, the expected runtime per query is only a 
 
 
 \section{Conclusions and Further Work}
+% Vi har ændret på pladsen ved at gøre k større. Ville vi få værre/bedre resultater hvis vi varierede $m$?
 \newpage
 
 \begin{thebibliography}{}
@@ -364,6 +376,21 @@ Flavio Bonomi, Michael Mitzenmacher, Rina Panigrahy, Sushil Singh, and George Va
 
 %code in appendix
 \section*{Appendix}
+\appendix
+\section{Experiments}\label{appendix:experiments}
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{wildcard_1000_TPR1}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=.95\linewidth]{wildcard_1000_TNR1}
+\end{subfigure}
+\caption{The observed true positive and true negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0., and $\sigma$ = 0.4, with 2 different lengths of $W$}
+\label{fig:w-tpnr}
+\end{figure}
 %\lstinputlisting[language=Python]{../tools/size_estimator.py}
 
 

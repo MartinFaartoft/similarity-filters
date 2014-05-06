@@ -248,6 +248,42 @@ def eliminate_false_negatives_experiment():
         json.dump(data_collection, outfile)
 
 
+def work_over_wildcards_graph():
+    epsilon = 0.1
+    delta = 0.4
+    l = 100
+    n = 100
+    k = 20
+    number_of_candidates = 1000
+
+    max_wildcards = 101
+
+    closeness = int(math.floor(l * epsilon))
+    farness = int(math.floor(l * delta))
+    data = []
+
+    for step_w in range(0, max_wildcards, 5):
+        wildcards = random.sample(range(l), step_w)
+        print "W=", step_w
+        epsilon, delta, l, k, n, l_prime, m_prime, threshold, space, total_input_size, fraction = calculate_harvard_params(epsilon, delta, l, k, n)
+        dsbf = DistanceSensitiveBloomFilter(k, m_prime, l_prime, prime_100, seed, threshold, l) #k, m, l_prime, prime, seed, threshold, length):
+        data_row = {}
+
+        ratios, stats = calculate_accuracy_ratios(dsbf, n, l, closeness, farness, number_of_candidates, wildcards)
+        close_stats, far_stats = stats
+        data_row['ratios'] = ratios
+        data_row['parameters'] = k, space, total_input_size, fraction, l, k, n, l_prime, number_of_candidates
+        data_row['wildcards'] = wildcards
+        data_row['close_stats'] = close_stats
+        data_row['far_stats'] = far_stats
+        data.append(data_row)
+
+    import json
+
+    with open('wildcard/work_over_wildcards_%d.json' % max_wildcards, 'w') as outfile:
+        json.dump(data, outfile)
+
+
 def test_generate_close():
     candidate = [1,1,1,1]
     wildcards = [2,3]
@@ -259,7 +295,8 @@ def test_generate_close():
 
 #pagh_graph()
 #run()
-harvard_graph()
+#harvard_graph()
+work_over_wildcards_graph()
 #eliminate_false_negatives_experiment()
 #def __init__(self, k, m, bits_to_sample, prime, seed):
 #test_generate_close()
