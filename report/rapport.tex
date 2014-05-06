@@ -323,17 +323,17 @@ The second approach has the following desirable properties:
 %increased FP due to non-LSH collisions
 
 And the following undesirable properties:
-\paragraph{Increased Time Complexity for Wildcard Search} Multiple queries for each LSH, means that the time complexity is no longer constant.
+\paragraph{Increased Time Complexity for Wildcard Search} Multiple queries for each LSH, means that the time complexity is no longer constant, if $|W|$ is not kept small.
 
 \paragraph{Increased False Positive Rate} When querying each LSH multiple times, the chances of a false positive also increases. The probability of an accidental collision\footnote{See Section \ref{sec:lsh}} is constant, so querying multiple times will increase the probability of a false positive.
 
 
-\subsubsection*{Choosing the number of wildcarded bits}
+\subsubsection*{Choosing the Number of Wildcarded Bits}
 As shown earlier in \ref{lbl:worst_case}, the query time grows exponentially with the number of wildcarded bits sampled by each LSH. This motivates us to keep that number small. The expected number of wildcarded bits sampled by some LSH is given by
 \[E(X_w)=l' \cdot \frac{|W|}{l}\]
 If we want each LSH to expectedly sample $b$ wildcarded bits, we can choose $|W|$ such that:
 \[E(X_w)=b \Rightarrow b = l' \cdot \frac{|W|}{l} \Leftrightarrow |W| = \frac{b \cdot l}{l'}\]
-This will ensure that query times are reasonable in practice.\todo{lidt svagt formuleret?}
+From the above we see that if $b = 1$, the expected runtime per query is only a constant factor worse than a DSBF query without wildcards. 
 
 
 
@@ -341,7 +341,7 @@ This will ensure that query times are reasonable in practice.\todo{lidt svagt fo
 
 
 
-\section{Conclusion}
+\section{Conclusions and Further Work}
 \newpage
 
 \begin{thebibliography}{}
