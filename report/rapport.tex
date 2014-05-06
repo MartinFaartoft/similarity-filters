@@ -66,14 +66,14 @@
 \begin{document}
 \graphicspath{ {./images/} }
 \date{May 21st 2014}
-\title{Similarity Filters\\A Survey}
+\title{Extending Distance Sensitive Bloom Filters}
 
 \author{Marcus Gregersen\\
 \texttt{mabg@itu.dk}
 \and Martin Faartoft\\
 \texttt{mlfa@itu.dk}
 \and Rick Marker\\
-\texttt{rdam@itu.dk}}
+\texttt{rdam@itu.dk}\thanks{Supervisor: Rasmus Pagh \texttt{pagh@itu.dk}}}
 %TODO vejleder og institut
 \clearpage\maketitle
 \thispagestyle{empty}
@@ -273,7 +273,7 @@ Since the last two bits are wildcarded, we generate all possible variations of $
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
 We now query the DSBF with each of the variations, and if any of them returns 'close', we report 'close' to the original query $q, W$.
 
-This requires $2^{|W|}$ queries in the worst case, and half \todo{det med half gælder kun hvis vi ved at den er close}of that in the average case, assuming we 'short-curcuit' (stop querying) after receiving the first 'close' response. 
+This requires $2^{|W|}$ queries in the worst case, and half \todo{det med half gælder kun hvis vi ved at den er close}of that in the average case, assuming we 'short-curcuit' (stop querying) after receiving the first 'close' response.
 
 Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
 
@@ -378,6 +378,16 @@ Figure \ref{fig:w-perf}b shows the performance gained by short-circuiting sub-qu
 
 \section{Conclusion}
 % Vi har ændret på pladsen ved at gøre k større. Ville vi få værre/bedre resultater hvis vi varierede $m$?
+
+In this paper we have implemented the Distance Sensitive Bloom Filter\cite{paper:harvard} presented by Kirsch & Mitzenmacher. We have been able to reproduce some of their experiments.
+
+We have introduced the Balanced LSH Bit Sampling method which theoretically avoids skewed bit sampling. In practice however questionable whether the method improves the performance of the DSBF.
+
+Futhermore we have introduced a method to eliminate false positives. We have not however been able to find a parameter space in which the method yields promising results.
+
+Finally we have introduced an extension to the DSBF that allows Wildcard search. The method sacrifices the asymptotic constant query time guarantee of the DSBF, however in practical cases\todo{hmm}
+
+
 \newpage
 
 \begin{thebibliography}{}
