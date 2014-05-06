@@ -84,7 +84,7 @@ By eliminating the possiblity of false negatives, by enabling balanced bit sampl
 
 When eliminating false negatives we end up with too many false positives to make it a viable approach for any real world scenario.
 In regards to balanced bit sampling we achieve better results when working with smaller elements, as the nature of randomization favors longer input. It does however make it possible to give a guarentees in regards to how many times bits are sampled.
-Our implementation of wildcard search, increases false positives XX\%, but does not degrade any other accuracy measure. Query time does however go from constant time to exponential in the worst case. The worst case running time is rarely the case.
+Our implementation of wildcard search, increases the false positive rate from on average 0.6\% to 0.8\%, but does not degrade on any other accuracy measure. Query time does however go from constant time to exponential in the worst case. The worst case running time is rarely the case.
 \end{abstract}
 
 \newpage
