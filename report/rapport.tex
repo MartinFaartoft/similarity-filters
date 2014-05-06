@@ -79,7 +79,12 @@
 \thispagestyle{empty}
 \setcounter{page}{1}
 \begin{abstract}
-The abstract goes here
+In this report we build upon the work done in "Distance-Sensitive Bloom Filters" by Adam Kirsch and Michael Mitzenmacher, by extending their Distance-sensitive Bloom filters in 3 ways:
+By eliminating the possiblity of false negatives, by enabling balanced bit sampling for thee hash functions used in the filter, and by enabling wildcard searches. This extension requires no knowledge of wildcards on insert time.
+
+When eliminating false negatives we end up with too many false positives to make it a viable approach for any real world scenario.
+In regards to balanced bit sampling we achieve better results when working with smaller elements, as the nature of randomization favors longer input. It does however make it possible to give a guarentees in regards to how many times bits are sampled.
+Our implementation of wildcard search, increases false positives XX\%, but does not degrade any other accuracy measure. Query time does however go from constant time to exponential in the worst case. The worst case running time is rarely the case.
 \end{abstract}
 
 \newpage
@@ -195,27 +200,6 @@ They use a method called Active Overflowed Scheme, which utilizes the property o
 In the following, we will build upon the work of \cite{paper:harvard}.  Their work achieves robustness by using thresholds and the way they present their results allows for easy comparison.\\
 
 We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme. We see no reason for LSH values to exhibit 'neighbour' locality, unless a difference happens to be in the least significant bit. 
-
-%\end{figure}
-%\begin{figure}[H]
-%\centering
-%\begin{subfigure}{.5\textwidth}
-%  \centering
-%  \includegraphics[width=.95\linewidth]{FPR2}
-%\end{subfigure}%
-%\begin{subfigure}{.5\textwidth}
-%  \centering
-%  \includegraphics[width=.95\linewidth]{FNR2}
-%\end{subfigure}
-%\caption{The observed false positive and false negative rates for $n$ = 10000, $l$ = 65536, $\epsilon$ = 0.05, and $\sigma$ = 0.4}
-%\label{fig:n10000}
-%\end{figure}
-
-
-%tegn nogle grafer
-
-% Forsøg at finde variable eksperimentelt
-% Forsøg at variér closeness/farness i kandidater og tegn FP og FN-rate som funktion af disse
 
 \section{Suggested Improvements}
 In the following, we present our contributions. They take the form of a series of suggested improvements and ideas for alternate usage.
@@ -344,6 +328,7 @@ In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the s
 
 
 \section{Conclusions and Further Work}
+% Vi har ændret på pladsen ved at gøre k større. Ville vi få værre/bedre resultater hvis vi varierede $m$?
 \newpage
 
 \begin{thebibliography}{}
