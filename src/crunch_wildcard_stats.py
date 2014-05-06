@@ -110,8 +110,9 @@ print x
 from pylab import *
 
 figure(0)
-b, = plot(x, y_close_smart_worst_log, 'r')
-c, = plot(x, y_close_smart_actual_log, 'k--')
+yscale('log')
+b, = plot(x, y_close_smart_worst, 'r')
+c, = plot(x, y_close_smart_actual, 'k--')
 #d, = plot(x, y_far_smart_worst, 'g')
 #e, = plot(x, y_far_smart_actual_log, 'k:')
 
@@ -125,12 +126,12 @@ show()
 
 
 figure(1)
-a, = plot(x, y_naive_worst_log, 'r')
-b, = plot(x, y_close_smart_worst_log, 'k--')
+yscale('log')
+a, = plot(x, y_naive_worst, 'r')
+b, = plot(x, y_close_smart_worst, 'k--')
 #c, = plot(x, y_close_smart_actual_log, 'k--')
 #d, = plot(x, y_far_smart_worst, 'g')
 #e, = plot(x, y_far_smart_actual_log, 'k:')
-
 legend([a,b], ['Naive', 'Improved'])
 xlabel('Fraction of wildcarded bits')
 ylabel('Log2(# of sub-queries)')
