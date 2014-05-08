@@ -80,7 +80,11 @@
 \setcounter{page}{1}
 \begin{abstract}
 In this paper we build upon the work done in "Distance-Sensitive Bloom Filters"\cite{paper:harvard} by Kirsch and Mitzenmacher, by extending their Distance-sensitive Bloom filters (DSBF) in 3 ways:
-We improve robustness by modifying the Locality Sensitive Hashing functions, so they sample bits in a systematic and balanced way. We provide a guarantee against false negatives, if bit sampling is balanced and the threshold $t$ is chosen correctly. We show that this is a tradeoff resulting in an increased probability of false positives, and is conclude that this is only useful for very small values of $\epsilon$.
+We improve robustness by modifying the Locality Sensitive Hashing functions, so they sample bits in a systematic and balanced way. We provide a guarantee against false negatives, if bit sampling is balanced and the threshold $t$ is chosen correctly.
+
+ We show that this is a tradeoff resulting in an increased probability of false positives, and is conclude that this is only useful for very small values of $\epsilon$.
+
+
 Finally we extend the DSBF structure to support also support queries with wildcards. We show that this can be done with no additional space, and a slight increase the false positive rate. Wildcard search makes the running time of a query exponential in the number of wildcards, but we show that if the number of wildcarded bits is chosen correctly, the expected running time becomes constant.
 \end{abstract}
 
@@ -96,7 +100,7 @@ The Similarity Search problem can be stated as follows: Given a set of elements 
 A real-word example could be a database of candidates used by a headhunting agency. Each candidate in the database would then have a set of attributes, for example \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, and \texttt{experience}\}.
 An application of Similarity Search can then be formulated as: "Given some person P, does the database contain one or more candidates, similar to P?".
 % Begræns problemet
-In the following we consider the Similarity Search problem for bit-vectors of length $l$, and Hamming distance as metric. This reduction maintains a high degree of generality, since elements from many domains can be encoded as bit-vectors.
+In the following we consider the Similarity Search problem for bit-vectors of length $l$, and Hamming distance as metric. This reduction maintains a high degree of generality, since elements from any domain can be encoded as bit-vectors.
 
 \subsection{Definitions}
 \begin{description}
@@ -117,7 +121,7 @@ A Bloom filter is an inexact representation of a set that allows for false posit
 
 Ordinary hashing tries to minimize the probability of a collision, while Locality-Sensitive Hashing (LSH) attempts to maximize the collision probability for sufficiently similar elements.
 
-LSH functions are not known for all similarity-measures, but for the Hamming metric on bit-vectors, a particularly simple one is known: Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniformly at random. 
+LSH functions are not known for all similarity-measures, but for the Hamming metric on bit-vectors, a particularly simple one is known: Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniformly at random.
 This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is highly desired (called locality collision in the following). Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to hash the bit vector to an integer, and use that value as an index in some array of size $m$. When $m < 2^{l'}$, we have from the pigeonhole principle, that multiple bit vectors must hash to the same value, similar to ordinary hashing collisions. This type of collision is not desirable, and leads to an increase in false positives. We call this an accidental collision in the following.
 
 \item \textbf{$\epsilon$-closeness}
@@ -133,7 +137,7 @@ This LSH now considers all vectors that are identical on the $l'$ sampled bit po
 \label{naive_approaches}
 
 \paragraph{Brute force}
-The most obvious idea for solving the Similarity Search problem, is brute force. Store the elements $S$ in a linked list. When a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
+The most obvious idea for solving the Similarity Search problem, is to apply brute force. The idea is to store the elements $S$ in a linked list, when a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
 
 This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
 
@@ -148,8 +152,8 @@ Another way to go around this is by sacrificing query time. This can be done by 
 \subsection{Distance-Sensitive Bloom Filters}
 Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. The aim is to expand upon classical Bloom filters, enabling them to solve the Similarity Search problem. They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
 
-They accomplish this by using $k$ locality sensitive hashing functions, independently chosen such that two elements that are sufficiently similar, will hash to the same value with a high probability. 
-When querying the Bloom filter for an approximate match, the element is hashed with each of the LSH functions, and the corresponding indiceses are checked. If there are more bits, than a specified threshold ($t$), that is set to 1, it returns that the data contains an element that is close to the query element. In contrast to standard Bloom filters, the usage of LSH introduces the possibility of false negatives, due to accidental LSH collisions, but the use of a threshold keeps the false negative probability fairly low. 
+They accomplish this by using $k$ locality sensitive hashing functions, independently chosen such that two elements that are sufficiently similar, will hash to the same value with a high probability.
+When querying the Bloom filter for an approximate match, the element is hashed with each of the LSH functions, and the corresponding indiceses are checked. If there are more bits, than a specified threshold ($t$), that is set to 1, it returns that the data contains an element that is close to the query element. In contrast to standard Bloom filters, the usage of LSH introduces the possibility of false negatives, due to accidental LSH collisions, but the use of a threshold keeps the false negative probability fairly low.
 
 In their experiments they manage to achieve false postive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, with $\epsilon = 0.1$ and $\delta = 0.4$. For 10000 elements they achieve 0.016\% false positive rate and 0.003\% false negative rate, with with $\epsilon = 0.05$ and $\delta = 0.4$. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space.
 
@@ -176,19 +180,20 @@ Note that since the Verification Scheme is a standard Bloom filter, it is suscep
 
 \paragraph{Minimizing False Negatives}
 Hua et al. use a method called Active Overflowed Scheme. The idea is that, while a pair of close elements may not be hashed to the same value, they may instead hash to values that are adjacent in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, they also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives\footnote{We remain sceptical towards the Active Overflowed Scheme. We see no reason for LSH values to exhibit 'neighbour' locality, unless a difference happens to be in the least significant bit.
-}.\\ 
+}.\\
 
 In their paper, Hua et al. have chosen to use a 'proximity measure', which makes it difficult to compare the results to the ones found in \cite{paper:harvard}. Furthermore, all results are only presented in graph form. From the graphs, however, we can see that they achieve between 85\% and 100\% accuracy.\\
 
 
 In the following, we will build upon the work of \cite{paper:harvard}.  Their work achieves robustness by using thresholds and the way they present their results allows for easy comparison.\\
 
-We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme. 
+We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme.
 
 \section{Balanced LSH Bit Sampling} \label{sec:balanced}
 
 The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the $k$ hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false positives and -negatives.
-Inspired by our supervisor we investigate how this may be improved upon.
+
+Inspired by ideas from our supervisor we investigate how this may be improved upon.
 
 By initializing the LSHs such that all bit positions are sampled equally often, we can avoid the problems arising from unbalanced bit sampling.
 In practice we do this by first preparing a vector of length $k \cdot l'$ by repeating the the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l'$, making sure that every index in the sub-vector is unique. This preprocessing step takes $O(l)$ time, and protects the DSBF from poor performance due to skewed sampling.
@@ -217,22 +222,22 @@ In practice, when $l$ get sufficiently large, the probability that a DSBF withou
 
 
 \section{Eliminating False Negatives}
-Building on the previous idea from \ref{sec:balanced}, we present a method to eliminate false negatives from the DSBF data-structure.
+Building on the previous idea from Section \ref{sec:balanced}, we present a method to eliminate false negatives from the DSBF data-structure.
 
-\paragraph{False Negatives} \label{p:fn}happen when a query element is within distance $\epsilon$ of an element in S, but is reported as being 'not close'. This happens when too many of the $k$ LSH functions report false, driving the number of trues below the threshold $t$. We know that each of the LSHs that report false, will sample at least one bit in which $q$ and every element $s \in S$ differ. Since q, by definition, is 'close' to some element $s \in S$, the maximum number of differences between $q$ and the closest element in $S$ is: $\epsilon_{abs} = \ceil{\epsilon \cdot l}$, where $l$ is the element length. Assuming that each is sampled an equal number of times (ensured by \ref{sec:balanced})): $n_{sample} = \ceil{\frac{k \cdot l{'}}{l}}$, the maximum number of hash-functions that can report false is: $n_{false} = e_{abs} \cdot n_{sample}$.
+False Negatives \label{p:fn}happen when a query element is within distance $\epsilon$ of an element in S, but is reported as being 'not close'. This happens when too many of the $k$ LSH functions report false, driving the number of trues below the threshold $t$. We know that each of the LSHs that report false, will sample at least one bit in which $q$ and every element $s \in S$ differ. Since q, by definition, is 'close' to some element $s \in S$, the maximum number of differences between $q$ and the closest element in $S$ is: $\epsilon_{abs} = \ceil{\epsilon \cdot l}$, where $l$ is the element length. Assuming that each is sampled an equal number of times (ensured by \ref{sec:balanced})): $n_{sample} = \ceil{\frac{k \cdot l{'}}{l}}$, the maximum number of hash-functions that can report false is: $n_{false} = e_{abs} \cdot n_{sample}$.
 
-\paragraph{Providing a guarantee} against false negatives can be achieved by lowering the DSBF threshold appropriately. Armed with the knowledge of $n_{false}$ from \ref{p:fn}, we can set $t = k - n_{false}$, and thereby eliminate the possibility of false negatives completely.
+Providing a guarantee against false negatives can be achieved by lowering the DSBF threshold appropriately. Armed with the knowledge of $n_{false}$ from \ref{p:fn}, we can set $t = k - n_{false}$, and thereby eliminate the possibility of false negatives completely.
 
 Lowering $t$ comes at a price, the lower the value of $t$, the higher the probability of a false positive. In the edge case, where $t=0$, the DSBF becomes useless, answering 'close' to every query. Taking this into account, we have to constrain the value of $n_{false}$ such that $t>0$.
 \[t > 0 \Leftrightarrow k > n_{false} \Leftrightarrow k > \epsilon_{abs} \cdot n_{sample}\]
 Since $k$ is usually chosen around $20$, and $n_{sample}$ small and grows proportionally to $k$, $e_{abs}$ will have to be very small (below 10) for $t$ to remain positive. This limitation seriously hinders the real-world applications of the guarantee against false negatives.
 
 \section{Wildcard Search}
-The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". A natural extension to this, is to want to ignore certain bits in $q$, when calculating the similarity.
+The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". A natural extension to this, is be able to ignore certain bits in $q$, when calculating the similarity.
 
 If we examine the job applicants example from the introduction, an application of Similarity Search with wildcards can be formulated as follows: Given a person with attributes \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\} does the dataset contain one or more similar applicants, disregarding the attributes \texttt{gender} and \texttt{age}.\\
 
-The extended problem can be more formally stated as follows: Let $W$ be a set of wildcard bit positions:
+The extended problem can be formally stated as: Let $W$ be a set of wildcard bit positions:
 \[\forall w \in W (w \in \mathbb{Z}^+ \land w < l)\]
 Given a set of elements $S$, a query element $q$ and a set of wildcards $W$. Determine if there exists an element $s \in S$ that is 'close' to $q$, not counting differences on wildcard positions $W$. Where 'close' is defined as being within a given distance, $d$ using a given metric.
 
@@ -253,7 +258,7 @@ Since the last two bits are wildcarded, we generate all possible variations of $
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
 We now query the DSBF with each of the variations, and if any of them returns 'close', we report 'close' to the original query $q, W$.
 
-This requires $2^{|W|}$ queries in the worst case, and half of that in the average case, assuming we the answer is 'close' and we 'short-curcuit' (stop querying) after receiving the first 'close' response. The time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
+This requires $2^{|W|}$ queries in the worst case, and half of that in the average case, assuming the answer is 'close' and we then 'short-curcuit' (stop querying) after receiving the first 'close' response. The time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
 
 This result is reasonably good for small numbers of wildcards, but we can do better if we leverage the inner workings of the DSBF, instead of treating it as a black box.\\
 
@@ -366,7 +371,7 @@ We have introduced a method to eliminate false negatives, at the cost of an incr
 
 Finally we have introduced an extension to the DSBF that allows for queries with wildcards. Wildcard queries expands the real-world applications of the Distance-Sensitive Bloom Filter, without increasing the space usage or true positive rate. This comes at the cost of a slightly increased false positive rate and a query time complexity that is exponential in the number of wildcards. We show a way of choosing the number of wildcards, such that a wildcard query runs in expected constant time.\\
 
-All source code is freely available at: \url{https://github.com/MartinFaartoft/similarity-filters}
+All source code is freely available at: \\\url{https://github.com/MartinFaartoft/similarity-filters}
 
 \newpage
 
@@ -384,10 +389,6 @@ Yu Hua, Bin Xiao, Bharadwaj Veeravalli, Dan Feng, "Locality-Sensitive Bloom Filt
 Flavio Bonomi, Michael Mitzenmacher, Rina Panigrahy, Sushil Singh, and George Varghese
 "An Improved Construction for Counting Bloom Filters"
 
-      %Sådan her ref'er man en URL
-      %\bibitem{lit:json}
-      %\url{http://tools.ietf.org/html/rfc4627}
-      %Retrieved: 2013-05-02
 \end{thebibliography}
 
 %code in appendix
@@ -407,7 +408,8 @@ Flavio Bonomi, Michael Mitzenmacher, Rina Panigrahy, Sushil Singh, and George Va
 \caption{The observed true positive and true negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0., and $\sigma$ = 0.4, with 2 different lengths of $W$}
 \label{fig:w-tpnr}
 \end{figure}
-%\lstinputlisting[language=Python]{../tools/size_estimator.py}
+
+%\lstinputlisting[language=Python]{../src/dsbf.py}
 
 
 \end{document}
