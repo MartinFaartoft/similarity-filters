@@ -42,3 +42,5 @@ nosetests.xml
 *.fdb_latexmk
 
 *.DS_Store
+
+.idea
