@@ -5,7 +5,7 @@ def avg(l):
     return sum(l) / float(len(l))
 
 data = []
-with open('wildcard/work_over_wildcards_50.json', 'r') as datafile:
+with open('wildcard/work_over_wildcards_101.json', 'r') as datafile:
     data = json.load(datafile)
 
 #print len(data)
@@ -116,7 +116,7 @@ c, = plot(x, y_close_smart_actual, 'k--')
 #d, = plot(x, y_far_smart_worst, 'g')
 #e, = plot(x, y_far_smart_actual_log, 'k:')
 
-legend([b,c], ['no short-circuit', 'short-circuit'])
+legend([b,c], ['no short-circuit', 'short-circuit'], loc='best')
 title('Wildcard query performance - Effects of short-circuiting')
 xlabel('Fraction of wildcarded bits')
 ylabel('# of sub-queries')
@@ -132,7 +132,7 @@ b, = plot(x, y_close_smart_worst, 'k--')
 #c, = plot(x, y_close_smart_actual_log, 'k--')
 #d, = plot(x, y_far_smart_worst, 'g')
 #e, = plot(x, y_far_smart_actual_log, 'k:')
-legend([a,b], ['Naive', 'Improved'])
+legend([a,b], ['Naive', 'Improved'], loc='best')
 xlabel('Fraction of wildcarded bits')
 ylabel('# of sub-queries')
 #ylim(0,0.030)
