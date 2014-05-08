@@ -187,12 +187,11 @@ We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They 
 
 \section{Balanced LSH Bit Sampling} \label{sec:balanced}
 
-The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the $k$ hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false answers.
-Inspired by our supervisor we investigate how remedied.
+The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the $k$ hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false positives and -negatives.
+Inspired by our supervisor we investigate how this may be improved upon.
 
-By initializing the LSHs such that all bit positions are sampled equally often.
+By initializing the LSHs such that all bit positions are sampled equally often, we can avoid the problems arising from unbalanced bit sampling.
 In practice we do this by first preparing a vector of length $k \cdot l'$ by repeating the the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l'$, making sure that every index in the sub-vector is unique. This preprocessing step takes $O(l)$ time, and protects the DSBF from poor performance due to skewed sampling.
-
 
 \subsection{Experiments}
 Figure \ref{fig:bitbalance-fpnr} shows an experiment run with Balanced bit sampling enabled (illustrated by the solid black line) and disabled (illustrated by the dashed red line), and shows that this optimization in some cases improves the performance of the DSBF.
@@ -212,7 +211,7 @@ In practice, when $l$ get sufficiently large, the probability that a DSBF withou
   \centering
   \includegraphics[width=.95\linewidth]{bitbalancing_FNR1}
 \end{subfigure}
-\caption{The observed true positive, false positive and false negative rates for $n$ = 1000, $l$ = 1000, $\epsilon$ = 0.1, and $\sigma$ = 0.4, with LSH bit-balancing enabled and disabled}
+\caption{The observed true positive, false positive and false negative rates for $n$ = 1000, $l$ = 1000, $\epsilon$ = 0.1, and $\delta$ = 0.4, with LSH bit-balancing enabled and disabled}
 \label{fig:bitbalance-fpnr}
 \end{figure}
 
@@ -220,21 +219,20 @@ In practice, when $l$ get sufficiently large, the probability that a DSBF withou
 \section{Eliminating False Negatives}
 Building on the previous idea from \ref{sec:balanced}, we present a method to eliminate false negatives from the DSBF data-structure.
 
-\paragraph{False Negatives} \label{p:fn}happen when a query element is within distance $\epsilon$ of an element in S, but is reported as being 'not close'. This happens when too many of the $k$ LSH functions report false, driving the number of trues below the threshold $t$. We know that each of the LSHs that report false, will sample at least one bit in which $q$ and every element $s \in S$ differ. Since q, by definition, is 'close' to some element $s \in S$, the maximum number of differences between $q$ and the closest element in $S$ is: $\epsilon_{abs} = \ceil{\epsilon \cdot l}$, where $l$ is the element length. Assuming that each is sampled an equal number of times (ensured by \ref{sec:balanced})): $l_n = \ceil{\frac{k \cdot l{'}}{l}}$, the maximum number of hash-functions that can report false is: $n_{false} = e_{abs} \cdot l_n$.
+\paragraph{False Negatives} \label{p:fn}happen when a query element is within distance $\epsilon$ of an element in S, but is reported as being 'not close'. This happens when too many of the $k$ LSH functions report false, driving the number of trues below the threshold $t$. We know that each of the LSHs that report false, will sample at least one bit in which $q$ and every element $s \in S$ differ. Since q, by definition, is 'close' to some element $s \in S$, the maximum number of differences between $q$ and the closest element in $S$ is: $\epsilon_{abs} = \ceil{\epsilon \cdot l}$, where $l$ is the element length. Assuming that each is sampled an equal number of times (ensured by \ref{sec:balanced})): $n_{sample} = \ceil{\frac{k \cdot l{'}}{l}}$, the maximum number of hash-functions that can report false is: $n_{false} = e_{abs} \cdot n_{sample}$.
 
 \paragraph{Providing a guarantee} against false negatives can be achieved by lowering the DSBF threshold appropriately. Armed with the knowledge of $n_{false}$ from \ref{p:fn}, we can set $t = k - n_{false}$, and thereby eliminate the possibility of false negatives completely.
 
 Lowering $t$ comes at a price, the lower the value of $t$, the higher the probability of a false positive. In the edge case, where $t=0$, the DSBF becomes useless, answering 'close' to every query. Taking this into account, we have to constrain the value of $n_{false}$ such that $t>0$.
-\[t > 0 \Leftrightarrow k > n_{false} \Leftrightarrow k > \epsilon_{abs} \cdot l_n\]
-This turns out to be a big deal, $k$ is usually below 100, $l_n$ can be kept small, but not smaller than 1. Those two bound $\epsilon_{abs}$, to definitely be below 100, which in turn makes it impossible for $\epsilon$ to be a constant fraction of $l$, for increasing $l$ values.
+\[t > 0 \Leftrightarrow k > n_{false} \Leftrightarrow k > \epsilon_{abs} \cdot n_{sample}\]
+Since $k$ is usually chosen around $20$, and $n_{sample}$ small and grows proportionally to $k$, $e_{abs}$ will have to be very small (below 10) for $t$ to remain positive. This limitation seriously hinders the real-world applications of the guarantee against false negatives.
 
 \section{Wildcard Search}
-The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". In the following. A natural extension to this, is to want to ignore certain bits in $q$, when calculating the similarity.
+The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". A natural extension to this, is to want to ignore certain bits in $q$, when calculating the similarity.
 
-If we examine the job applicants example from the introdution, one application of the Similarity Search with Wildcards can formulated as: Given some employee with the attributes \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\} does the dataset contain one or more applicants that match on at least two attributes while disregarding the attributes \texttt{gender} and \texttt{age}?.\\
+If we examine the job applicants example from the introduction, an application of Similarity Search with wildcards can be formulated as follows: Given a person with attributes \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\} does the dataset contain one or more similar applicants, disregarding the attributes \texttt{gender} and \texttt{age}.\\
 
-%\subsection{The Extended Problem}
-The problem can be extended as follows: Let $W$ be a set of wildcard bit positions:
+The extended problem can be more formally stated as follows: Let $W$ be a set of wildcard bit positions:
 \[\forall w \in W (w \in \mathbb{Z}^+ \land w < l)\]
 Given a set of elements $S$, a query element $q$ and a set of wildcards $W$. Determine if there exists an element $s \in S$ that is 'close' to $q$, not counting differences on wildcard positions $W$. Where 'close' is defined as being within a given distance, $d$ using a given metric.
 
@@ -255,31 +253,31 @@ Since the last two bits are wildcarded, we generate all possible variations of $
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
 We now query the DSBF with each of the variations, and if any of them returns 'close', we report 'close' to the original query $q, W$.
 
-This requires $2^{|W|}$ queries in the worst case, and half \todo{det med half gælder kun hvis vi ved at den er close}of that in the average case, assuming we 'short-curcuit' (stop querying) after receiving the first 'close' response.
+This requires $2^{|W|}$ queries in the worst case, and half of that in the average case, assuming we the answer is 'close' and we 'short-curcuit' (stop querying) after receiving the first 'close' response. The time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
 
-Using this approach, the time complexity for a query with wildcards is exponential in the number of wildcarded bits.\\
+This result is reasonably good for small numbers of wildcards, but we can do better if we leverage the inner workings of the DSBF, instead of treating it as a black box.\\
 
-This result is reasonably good for a small number of wildcards, but we can do better if we leverage the inner workings of the DSBF, instead of treating it as a black box.
-When the DSBF is queried, it hashes the query element $q$ using $k$ different LSH functions, and checks the corresponding locations in the internal memory. Each of the $k$ LSH functions sample a different subset $l'$ out of the total $l$ bits in $q$. This means that when the DSBF is queried multiple times with different variations of $q$, some of the LSH functions will do repeated work if they do not sample any of the wildcarded bits.
+When the DSBF is queried, it hashes the query element $q$ using $k$ different LSH functions, and checks the corresponding locations in the internal memory. Each of the $k$ LSH functions sample a different subset $l'$ out of the total $l$ bits in $q$. This means that when the DSBF is queried multiple times with different variations of $q$, some of the LSH functions will do repeated work if they do not sample all of the wildcarded bits.
 
 We wish to eliminate this repeated work. Assume again the simple example:
 \[q=[0,0,0,0], W=\{2,3\}\]
 Additionally assume that the DSBF contains 3 LSH functions that sample bits as follows:
 \[B_{LSH_1}=\{0,1\}, B_{LSH_2}=\{1,2\}, B_{LSH_3}=\{2,3\}\]
-Instead of querying the DSBF multiple times, we push that one level down, querying each LSH (possibly) multiple times.
-$LSH_1$ receives $q$ and $W$. It calculates $B_{LSH_1} \cap W = \emptyset $, meaning that it samples none of the wildcarded bits. It then simply hashes $q$, and returns the corresponding value from memory.
+Instead of querying the entire DSBF multiple times, we push the multiple queries down, querying each LSH (possibly) multiple times.
+
+Continuing with the example, $LSH_1$ receives $q$ and $W$. It calculates $B_{LSH_1} \cap W = \emptyset $, meaning that it samples none of the wildcarded bits. It then simply hashes $q$, and returns the corresponding value from memory.
 $LSH_2$ calculates $B_{LSH_2} \cap W = \{2\}$. It then generates all possible variations of $q$ on the sampled wildcard positions:
 \[q_1=[0,0,0,0], q_2=[0,0,1,0]\]
 looks up the corresponding positions, and returns the binary 'OR' between the values.
 $LSH_3$ does the same thing, but since it samples both bits 2 and 3, it has to generate 4 variations of $q$ and 'OR' the results.
-The rest of the query is unchanged, if the number of LSH's that returned 'true' exceeds the threshold, $t$, the DSBF reports 'close'.\\
+
+The thresholding logic of the query is unchanged, if the number of LSH's that returns 'true' exceeds the threshold, $t$, the DSBF reports 'close'.\\
 
 \label{lbl:worst_case}
 The above requires $2^{min(|W|, l')}$ queries in the worst case.
 This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH hashes all the bit positions in $W$.
-\todo{analyse af average case time complexity goes here?}
 
-We note that to be in a worst case situation, all wildcard indices have to have to be sampled by a single LSH. Due to the nature of randomization, this will only happen with a low probability. On average it will be more likely that the wildcard indices are evenly distributed among the LSHs.
+We note that to be in a worst case situation, all wildcard indices have to have to be sampled by a single LSH. Due to the nature of randomization, this will only happen with a very low probability.
 
 %advantages
 %no prior knowledge of W required
@@ -287,11 +285,11 @@ We note that to be in a worst case situation, all wildcard indices have to have 
 %no extra memory required
 \subsection{Properties of Wildcard Search}
 The second approach has the following desirable properties:
-\paragraph{No prior knowledge of W required} At the time of construction, the DSBF requires no knowledge of what / how many bits will be wildcarded.
+\paragraph{No prior knowledge of W required} At the time of construction, the DSBF requires no knowledge of which, and how many bits will be wildcarded.
 
-\paragraph{No changes to 'insert'} The process of adding items to the DSBF does not require modifications to support wildcard search.
+\paragraph{No changes to \emph{insert}} The process of adding items to the DSBF does not require modifications to support wildcard search.
 
-\paragraph{Highly parallelizable} Each of the $k$ LSH's can be queried in parallel, no locking or synchronization is required since data is only read, never written.
+\paragraph{Highly parallelizable} Each of the $k$ LSH's can be queried in parallel, no locking or synchronization is required since data is only read, never written. Additionally, the work of each LSH can be further parallelized if it samples multiple wildcarded bits.
 
 \paragraph{No additional memory required} Because the wildcard search uses multiple queries, no additional memory is required.
 \\
@@ -300,9 +298,9 @@ The second approach has the following desirable properties:
 %increased FP due to non-LSH collisions
 
 And the following undesirable properties:
-\paragraph{Increased Time Complexity for Wildcard Search} Multiple queries for each LSH, means that the time complexity is no longer constant, if $|W|$ is not kept small.
+\paragraph{Increased Time Complexity for Wildcard Search} Multiple queries for each LSH, means that the query time complexity is no longer constant, if $|W|$ is not kept small.
 
-\paragraph{Increased False Positive Rate} When querying each LSH multiple times, the chances of a false positive also increases. The probability of an accidental collision\footnote{See Section \ref{sec:lsh}} is constant, so querying multiple times will increase the probability of a false positive.
+\paragraph{Increased False Positive Rate} When querying each LSH multiple times, the false positive probability increases. The probability of an accidental collision\footnote{See Section \ref{sec:lsh}} is constant, so querying multiple times will linearly increase the probability of a false positive.
 
 
 \subsection{Choosing the Number of Wildcarded Bits}
@@ -316,7 +314,7 @@ From the above we see that if $b = 1$, the expected runtime per query is only a 
 
 \subsection{Experiments}
 %precision
-In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the solid black line represents our implementation Kirsch and Mitezenmachers approach, and the dashed red line represents our extension with 1000 wildcard charachters per element. We see that the false negative rates are close, but the false positive rates are higher for a when increasing the number of wildcards. This is not due to a new kind of false positivies but rather due to the fact that when using this approach we are more likely to have multiple elements appear as a single element, and thus returning a positive. We see that all the plots has a spike at space usage $= 0.6$. This is due to the way the threshold is set, which is based on our number of hash functions. At this point the treshold needed to report a positive is incremented, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}. Graphs for true postivie rate and false can be found in Appendix \ref{appendix:experiments} but are also very close.
+In Figure \ref{fig:w-fpnr} we show the the effects of wildcards, on accuracy. The solid black line represents our implementation of DSBF with no wildcards. The dashed red line represents our extension with 1000 wildcard charachters per element. As expected, we observe that the false negative rates are similar, but the false positive rate grows when increasing the number of wildcards.  Note that all the plots have a spike around space usage $= 0.6$. This is due to the way the threshold is set, which is based on $k$, and rounded\footnote{See \cite{paper:harvard} for exact details on how to choose parameters}. At this point the treshold increases, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}.\footnote{Graphs for true positives and true negatives can be found in Appendix \ref{appendix:experiments}}
 
 \begin{figure}[H]
 \centering
@@ -328,12 +326,12 @@ In Figure \ref{fig:w-fpnr} we have two graphs with 2 subgraphs each, where the s
   \centering
   \includegraphics[width=.95\linewidth]{wildcard_1000_FNR1}
 \end{subfigure}
-\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0.1, and $\sigma$ = 0.4, with 2 different lengths of $W$}
+\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0.1, and $\delta$ = 0.4, with 2 different lengths of $W$}
 \label{fig:w-fpnr}
 \end{figure}
 
 %performance
-We have implemented wildcard search, and measured the actual performance of querying the DSBF with wildcards. The following experiments are carried out with the values: $l = 100, n = 100, k = 20, \epsilon=0.1, \delta=0.4$.
+We have implemented wildcard search, and measured the actual performance of querying the DSBF with wildcards. The following experiments are carried out with the parameters\footnote{the remaining parameters are calculated as per \cite{paper:harvard}}: $l = 100, n = 100, k = 20, \epsilon=0.1, \delta=0.4$.
 
 Figure \ref{fig:w-perf}a shows the performance of naïve approach 2 (red) against improved approach 2 (black), as the fraction of wildcarded bits increases. The graph shows that they both exhibit exponential growth, as expected, but that the improved version grows significantly slower, allowing for more wildcarded bits without significant loss of performance.
 
@@ -361,14 +359,14 @@ Figure \ref{fig:w-perf}b shows the performance gained by short-circuiting sub-qu
 \section{Conclusion}
 % Vi har ændret på pladsen ved at gøre k større. Ville vi få værre/bedre resultater hvis vi varierede $m$?
 
-In this paper we have implemented the Distance Sensitive Bloom Filter\cite{paper:harvard} presented by Kirsch \& Mitzenmacher. We have been able to reproduce some of their experiments.
+%In this paper we have implemented the Distance Sensitive Bloom Filter\cite{paper:harvard} as presented by Kirsch \& Mitzenmacher. We have been able to roughly reproduce their results, regarding accuracy.
+In this paper, we have introduced the Balanced LSH Bit Sampling method which aims to avoid skewed bit sampling. We have shown this to be a clear improvement for small problem instances, but expect the usefulness to decrease with growing problem sizes.\\
 
-We have introduced the Balanced LSH Bit Sampling method which theoretically avoids skewed bit sampling. In practice however questionable whether the method improves the performance of the DSBF.
+We have introduced a method to eliminate false negatives, at the cost of an increased probability of false positives. We have have argued that this is only useful for very small values of $\epsilon$, which makes it impractical for real-world applications.\\
 
-Futhermore we have introduced a method to eliminate false positives. We have not however been able to find a parameter space in which the method yields promising results.
+Finally we have introduced an extension to the DSBF that allows for queries with wildcards. Wildcard queries expands the real-world applications of the Distance-Sensitive Bloom Filter, without increasing the space usage or true positive rate. This comes at the cost of a slightly increased false positive rate and a query time complexity that is exponential in the number of wildcards. We show a way of choosing the number of wildcards, such that a wildcard query runs in expected constant time.\\
 
-Finally we have introduced an extension to the DSBF that allows Wildcard search. The method sacrifices the asymptotic constant query time guarantee of the DSBF, however in practical cases\todo{hmm}
-
+All source code is freely available at: \url{https://github.com/MartinFaartoft/similarity-filters}
 
 \newpage
 
