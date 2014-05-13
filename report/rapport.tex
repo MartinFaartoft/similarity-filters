@@ -79,13 +79,16 @@
 \thispagestyle{empty}
 \setcounter{page}{1}
 \begin{abstract}
-In this paper we build upon the work done in "Distance-Sensitive Bloom Filters"\cite{paper:harvard} by Kirsch and Mitzenmacher, by extending their Distance-sensitive Bloom filters (DSBF) in 3 ways:
-We improve robustness by modifying the Locality Sensitive Hashing functions, so they sample bits in a systematic and balanced way. We provide a guarantee against false negatives, if bit sampling is balanced and the threshold $t$ is chosen correctly.
+We consider the Similarity Search problem, in which we, given some universe of elements $S$ and a query element $q$, would like some data structure to answer 'close' if some element in $S$ matched $q$ on at least an $\epsilon$-fration of the attributes of $q$.
 
- We show that this is a tradeoff resulting in an increased probability of false positives, and is conclude that this is only useful for very small values of $\epsilon$.
+We present an implementation of a Distance-Sensitive Bloom Filter as described by Kirsch and Mitzenmacher\cite{paper:harvard}.
+
+Our contribution consists of three extensions to the DSBF. We improve the robustness by modifying the Locality Sensitive Hashing functions, so they sample bits in a systematic and balanced way.
+
+We provide a guarantee against false negatives, if bit sampling is balanced and the threshold $t$ is chosen correctly. We show that this is a tradeoff resulting in an increased probability of false positives, and is conclude that this is only useful for very small values of $\epsilon$.
 
 
-Finally we extend the DSBF structure to support also support queries with wildcards. We show that this can be done with no additional space, and a slight increase the false positive rate. Wildcard search makes the running time of a query exponential in the number of wildcards, but we show that if the number of wildcarded bits is chosen correctly, the expected running time becomes constant.
+Finally we extend the DSBF structure to also support queries with wildcards. We show that this can be done with no additional space, and a slight increase the false positive rate. Wildcard search makes the running time of a query exponential in the number of wildcards, but we show that if the number of wildcarded bits is chosen correctly, the expected running time becomes constant.
 \end{abstract}
 
 \newpage
