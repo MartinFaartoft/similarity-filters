@@ -111,13 +111,15 @@ In the following we consider the similarity search problem for bit-vectors of le
 A distance metric for bit-vectors. The Hamming distance between two bit vectors $v_1, v_2$ is given as the number of positions $i$ where $v_1[i] \neq v_2[i]$
 
 \item[Bloom filters]
-A compact, but inexact set representation. It answers membership queries in constant time, but allows for false positives, meaning it can either answer "Maybe in the set", or "Definitely not in the set".\footnote{See \cite{paper:bloom} for details on Bloom filters}
+A compact and inexact set representation. A Bloom filter answers membership queries in constant time, but allows for false positives, meaning it can either answer "Maybe in the set", or "Definitely not in the set".\footnote{See \cite{paper:bloom} for details on Bloom filters}
 
 \item[Locality Sensitive Hashing]
 Ordinary hashing tries to minimize the probability of a collision, while Locality-Sensitive Hashing (LSH) attempts to maximize the collision probability for sufficiently similar elements.
 
 LSH functions are not known for all similarity-measures, but for the Hamming metric on bit-vectors, a particularly simple one is known: Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniformly at random.
-This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is highly desired. Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to hash the bit vector to an integer, and use that value as an index in some array of size $m$. When $m < 2^{l'}$, we have from the pigeonhole principle, that multiple bit vectors must hash to the same value, similar to ordinary hashing collisions. This type of collision is not desirable, and leads to an increase in false positives. We call this an accidental collision in the following.
+This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is highly desired.
+
+Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to hash the bit vector to an integer, and use that value as an index in some array of size $m$. When $m < 2^{l'}$, we have from the pigeonhole principle, that multiple bit vectors must hash to the same value, similar to ordinary hashing collisions. This type of collision is not desirable, and leads to an increase in false positives. We call this an accidental collision in the following.
 \end{description}
 
 \section{Related work}
