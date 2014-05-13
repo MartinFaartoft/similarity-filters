@@ -28,7 +28,7 @@
 \usepackage[linesnumbered,boxed,ruled]{algorithm2e}
 \usepackage{mathtools}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
-% \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
+%\newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
 \newcommand{\BigO}[1]{\ensuremath{\mathop{}\mathopen{}\mathcal{O}\mathopen{}\left(#1\right)}}
 
 \definecolor{mygreen}{rgb}{0,0.6,0}
@@ -94,7 +94,7 @@ Finally we extend the DSBF structure to support also support queries with wildca
 \section{Introduction}
 In the following we investigate the Similarity Search problem. Different approaches have been explored by earlier work, and in this paper we consider two of those; 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} by Kirsch and Mitzenmacher, and 'Locality-Sensitive Bloom Filter for Approximate Membership Query'\cite{paper:hua} by Hua et al.
 
-\subsection{The Problem}
+\subsection{Problem Definition}
 The Similarity Search problem can be stated as follows: Given a set of elements $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$ using a certain metric.
 
 A real-word example could be a database of candidates used by a headhunting agency. Each candidate in the database would then have a set of attributes, for example \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, and \texttt{experience}\}.
@@ -102,55 +102,36 @@ An application of Similarity Search can then be formulated as: "Given some perso
 % Begræns problemet
 In the following we consider the Similarity Search problem for bit-vectors of length $l$, and Hamming distance as metric. This reduction maintains a high degree of generality, since elements from any domain can be encoded as bit-vectors.
 
-\subsection{Definitions}
+\subsection{Key Concepts}
+\label{sec:lsh}
 \begin{description}
-\item \textbf{Hamming distance}
+\item[Hamming distance]
 
 A distance metric for bit-vectors. The Hamming distance between two vectors $v_1, v_2$ is given as the number of positions $i$ where $v_1[i] \neq v_2[i]$
 
-\item \textbf{Bloom Filter}
+\item[Bloom filters]
+A compact, but inexact set representation. It answers membership queries in constant time, but allows for false positives, meaning it can either answer "Maybe in the set", or "Definitely not in the set".\footnote{See \cite{paper:bloom} for details on Bloom filters}
 
-In 'An Improved Construction for Counting Bloom Filters' \cite{paper:bloom} Bloom filters are described as:
-\begin{quotation}
-A Bloom filter is an inexact representation of a set that allows for false positives when queried; that is, it can sometimes say that an element is in the set when it is not. In return, a Bloom filter offers very compact storage: less than 10 bits per element are required for a 1\% false positive probability, independent of the size or number of elements in the set.
-\end{quotation}
-
-
-\item \textbf{Locality-Sensitive Hashing}
-\label{sec:lsh}
-
+\item[Locality Sensitive Hashing]
 Ordinary hashing tries to minimize the probability of a collision, while Locality-Sensitive Hashing (LSH) attempts to maximize the collision probability for sufficiently similar elements.
 
 LSH functions are not known for all similarity-measures, but for the Hamming metric on bit-vectors, a particularly simple one is known: Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniformly at random.
 This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is highly desired (called locality collision in the following). Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to hash the bit vector to an integer, and use that value as an index in some array of size $m$. When $m < 2^{l'}$, we have from the pigeonhole principle, that multiple bit vectors must hash to the same value, similar to ordinary hashing collisions. This type of collision is not desirable, and leads to an increase in false positives. We call this an accidental collision in the following.
-
-\item \textbf{$\epsilon$-closeness}
-  \begin{itemize}
-    \item If an element $s \in S$ differs from $x$ in at most an $\epsilon$-fraction of the bits, it is said to be $\epsilon$-close to $x$. The data structure must return “close”.
-    \item If every vector $s \in S$ differs from $x$ in at least a $\delta$-fraction of the bits, then the data structure should return 'not close'.
-    \item In all other cases, i.e. when the distance to the nearest vector is between $\epsilon$ and $\delta$, the data structure can return either of the two.
-  \end{itemize}
-
 \end{description}
 
-\subsection{Naïve Solutions for Similarity Search}
-\label{naive_approaches}
-
-\paragraph{Brute force}
-The most obvious idea for solving the Similarity Search problem, is to apply brute force. The idea is to store the elements $S$ in a linked list, when a query is made, simply scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
-
-This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space in the total number of bits in $S$, is prohibitively expensive for many real-world applications.
-
-\paragraph{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both.
-
-While keeping in mind that standard Bloom filters only supports exact matches, we see that one way of achieving this is by relying on extra insertions. Every time an element is added to the Bloom filter, all elements within distance $d$ are generated and added in addition to the original element. This increases the space requirement for the DSBF, and the time complexity of the \emph{insert} operation to be exponential in $d$.
-
-Another way to go around this is by sacrificing query time. This can be done by still doing normal insertions but instead querying for all elements with distance $d$ of the element we are comparing to. This approach has the benefit of still being space efficient but will cause an exponential blowup in the running time of a query.
-
-\section{Related work} % Ideer fra related works
+\section{Related work}
 
 \subsection{Distance-Sensitive Bloom Filters}
 Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. The aim is to expand upon classical Bloom filters, enabling them to solve the Similarity Search problem. They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
+
+Like Bloom filters, the DSBF structure supports two operations:
+\texttt{Insert} which adds an element to the set, and \texttt{Query} which queries the DSBF for the existence of similar elements.
+The \texttt{Query} operation should return:
+\begin{itemize}
+\item 'close' if an element in the set differs from the query element in at most an $\epsilon$-fraction of the bits.
+\item 'not close' If every inserted element, differs from the query element in at least a $\delta$-fraction of the bits.
+\item either 'close' or 'not close', if the fraction of differences lies between $\epsilon$ and $\delta$.
+\end{itemize}
 
 They accomplish this by using $k$ locality sensitive hashing functions, independently chosen such that two elements that are sufficiently similar, will hash to the same value with a high probability.
 When querying the Bloom filter for an approximate match, the element is hashed with each of the LSH functions, and the corresponding indiceses are checked. If there are more bits, than a specified threshold ($t$), that is set to 1, it returns that the data contains an element that is close to the query element. In contrast to standard Bloom filters, the usage of LSH introduces the possibility of false negatives, due to accidental LSH collisions, but the use of a threshold keeps the false negative probability fairly low.
@@ -188,6 +169,25 @@ In their paper, Hua et al. have chosen to use a 'proximity measure', which makes
 In the following, we will build upon the work of \cite{paper:harvard}.  Their work achieves robustness by using thresholds and the way they present their results allows for easy comparison.\\
 
 We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme.
+
+\section{Naïve Solutions for Similarity Search} \label{naive_approaches}
+
+\subsection{Linear Scan}
+The most obvious idea for solving the Similarity Search problem, is to apply brute force. 
+Let $n$ be the number of elements in $S$, $n = |S|$.
+The idea is to store the elements $S$ in a linked list. When a query is made, scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
+This yields a time and space complexity of \BigO{n}.\\
+
+This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space is prohibitively expensive for many real-world applications.
+
+\subsection{Bloom filters} If we relax the requirements on space or time, we can change these characteristics to support either constant-time queries, or space-efficiency, but not both.\\
+
+While keeping in mind that standard Bloom filters only supports exact matches, we see that one way of achieving this is by relying on extra insertions. Every time an element is inserted into the Bloom filter, all elements within distance $d$ are generated and added in addition to the original element. This increases the space requirement for the DSBF, and the time complexity of the \texttt{Insert} operation to be \BigO{2^d}, while keeping the time complexity of \texttt{Query} at \BigO{1}.\\
+
+Another tradeoff is to sacrifice time when querying. This can be done by generating all elements within distance $d$ of the element we are comparing to, and run a query for each. This approach has the benefit of being space efficient, and offering constant time for \texttt{Insert}, but will cause the time complexity of \texttt{Query} to increase to \BigO{2^d}.\\
+
+%specifikt for naive bloom filtre
+The exponential time / space complexities makes this unusable for non-trivial problem sizes.
 
 \section{Balanced LSH Bit Sampling} \label{sec:balanced}
 
