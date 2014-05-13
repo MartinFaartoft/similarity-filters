@@ -119,7 +119,7 @@ Ordinary hashing tries to minimize the probability of a collision, while Localit
 LSH functions are not known for all similarity-measures, but for the Hamming metric on bit-vectors, a particularly simple one is known: Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniformly at random.
 This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is highly desired.
 
-Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to hash the bit vector to an integer, and use that value as an index in some array of size $m$. When $m < 2^{l'}$, we have from the pigeonhole principle, that multiple bit vectors must hash to the same value, similar to ordinary hashing collisions. This type of collision is not desirable, and leads to an increase in false positives. We call this an accidental collision in the following.
+Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to hash the bit vector to an integer, and use that value as an index in some array of size $m$. When $m < 2^{l'}$, we have from the pigeonhole principle, that multiple bit vectors must hash to the same value. This type of collision leads to false positives and is called \textit{accidental collision} in the following.
 \end{description}
 
 \section{Related work}
@@ -136,8 +136,10 @@ The \texttt{Query} operation should return:
 \item either 'close' or 'not close', if the fraction of differences lies between $\epsilon$ and $\delta$.
 \end{itemize}
 
-They accomplish this by using $k$ locality sensitive hashing functions, independently chosen such that two elements that are sufficiently similar, will hash to the same value with a high probability.
-When querying the Bloom filter for an approximate match, the element is hashed with each of the LSH functions, and the corresponding indiceses are checked. If there are more bits, than a specified threshold ($t$), that is set to 1, it returns that the data contains an element that is close to the query element. In contrast to standard Bloom filters, the usage of LSH introduces the possibility of false negatives, due to accidental LSH collisions, but the use of a threshold keeps the false negative probability fairly low.
+They accomplish this by using $k$ different LSH functions chosen independently.
+When querying the Bloom filter for an approximate match, the element is hashed with each of the $k$ LSH functions, and the corresponding indices are checked.
+If there are more bits, than a specified threshold ($t$), that is set to 1, it returns 'close'.
+In contrast to standard Bloom filters, the usage of LSH introduces the possibility of false negatives, due to accidental LSH collisions, but the use of a threshold keeps the false negative probability low.
 
 \begin{figure}[H]
 \centering
