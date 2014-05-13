@@ -325,7 +325,7 @@ And the following undesirable properties:
 
 
 \subsection{Choosing the Number of Wildcarded Bits}
-As shown earlier in \ref{lbl:worst_case}, the query time grows exponentially with the number of wildcarded bits sampled by each LSH. This motivates us to keep that number small. The expected number of wildcarded bits sampled by some LSH is given by
+As shown earlier in Section \ref{lbl:worst_case}, the query time grows exponentially with the number of wildcarded bits sampled by each LSH. This motivates us to keep that number small. The expected number of wildcarded bits sampled by some LSH is given by
 \[E(X_w)=l' \cdot \frac{|W|}{l}\]
 If we want each LSH to expectedly sample $b$ wildcarded bits, we can choose $|W|$ such that:
 \[E(X_w)=b \Rightarrow b = l' \cdot \frac{|W|}{l} \Leftrightarrow |W| = \frac{b \cdot l}{l'}\]
