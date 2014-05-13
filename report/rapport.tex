@@ -374,7 +374,7 @@ In this paper, we have introduced the Balanced LSH Bit Sampling method which aim
 
 We have introduced a method to eliminate false negatives, at the cost of an increased probability of false positives. We have have argued that this is only useful for very small values of $\epsilon$, which makes it impractical for real-world applications.\\
 
-Finally we have introduced an extension to the DSBF that allows for queries with wildcards. Wildcard queries expands the real-world applications of the Distance-Sensitive Bloom Filter, without increasing the space usage or true positive rate. This comes at the cost of a slightly increased false positive rate and a query time complexity that is exponential in the number of wildcards. We show a way of choosing the number of wildcards, such that a wildcard query runs in expected constant time.\\
+Finally we have introduced an extension to the DSBF that allows for queries with wildcards. Wildcard queries expands the real-world applications of the Distance-Sensitive Bloom Filter, without increasing the space usage or true positive rate. This comes at the cost of a query time complexity, and false positive rate, that is exponential in the number of wildcards. We show that if the number of wildcards is sufficiently small, a wildcard query will run in expected constant time.\\
 
 All source code is freely available at: \\\url{https://github.com/MartinFaartoft/similarity-filters}
 
