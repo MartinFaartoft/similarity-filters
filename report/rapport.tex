@@ -107,7 +107,7 @@ In the following we consider the Similarity Search problem for bit-vectors of le
 \begin{description}
 \item[Hamming distance]
 
-A distance metric for bit-vectors. The Hamming distance between two vectors $v_1, v_2$ is given as the number of positions $i$ where $v_1[i] \neq v_2[i]$
+A distance metric for bit-vectors. The Hamming distance between two bit vectors $v_1, v_2$ is given as the number of positions $i$ where $v_1[i] \neq v_2[i]$
 
 \item[Bloom filters]
 A compact, but inexact set representation. It answers membership queries in constant time, but allows for false positives, meaning it can either answer "Maybe in the set", or "Definitely not in the set".\footnote{See \cite{paper:bloom} for details on Bloom filters}
@@ -231,7 +231,7 @@ In practice, when $l$ get sufficiently large, the probability that a DSBF withou
 
 
 \section{Eliminating False Negatives}
-Building on the previous idea from Section \ref{sec:balanced}, we present a method to eliminate false negatives from the DSBF data-structure.
+Building on the previous idea from Section \ref{sec:balanced}, we present a method to eliminate false negatives from the DSBF data structure.
 
 False Negatives \label{p:fn}happen when a query element is within distance $\epsilon$ of an element in S, but is reported as being 'not close'. This happens when too many of the $k$ LSH functions report false, driving the number of trues below the threshold $t$. We know that each of the LSHs that report false, will sample at least one bit in which $q$ and every element $s \in S$ differ. Since q, by definition, is 'close' to some element $s \in S$, the maximum number of differences between $q$ and the closest element in $S$ is: $\epsilon_{abs} = \ceil{\epsilon \cdot l}$, where $l$ is the element length. Assuming that each is sampled an equal number of times (ensured by \ref{sec:balanced})): $n_{sample} = \ceil{\frac{k \cdot l{'}}{l}}$, the maximum number of hash-functions that can report false is: $n_{false} = e_{abs} \cdot n_{sample}$.
 
