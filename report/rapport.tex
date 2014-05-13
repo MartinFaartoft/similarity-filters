@@ -92,15 +92,16 @@ Finally we consider an extension to the problem - supporting queries with wildca
 %\setcounter{page}{1}
 
 \section{Introduction}
-In the following we investigate the Similarity Search problem. Different approaches have been explored by earlier work, and in this paper we consider two of those; 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} by Kirsch and Mitzenmacher, and 'Locality-Sensitive Bloom Filter for Approximate Membership Query'\cite{paper:hua} by Hua et al.
+Different approaches to the similarity search problem have been explored by earlier work, and in this paper we consider two of those; 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} by Kirsch and Mitzenmacher, and 'Locality-Sensitive Bloom Filter for Approximate Membership Query'\cite{paper:hua} by Hua et al.
 
 \subsection{Problem Definition}
-The Similarity Search problem can be stated as follows: Given a set of elements, $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$, using a certain metric.
+The similarity search problem can be stated as follows: Given a set of elements, $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$, using a certain metric.
 
-A real-word example could be a database of candidates used by a headhunting agency. Each candidate in the database would then have a set of attributes, for example \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\}.
-An application of Similarity Search can then be formulated as: "Given some person P, does the database contain one or more candidates, similar to P?".
+A real world example could be a database of candidates used by a headhunting agency. Each candidate in the database would then have a set of features, for example \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\}.
+An application of similarity search can then be formulated as: "Given some person P, does the database contain one or more candidates, similar to P?".
 % Begræns problemet
-In the following we consider the Similarity Search problem for bit-vectors of length $l$, and Hamming distance as metric.
+
+In the following we consider the similarity search problem for bit-vectors of length $l$, and Hamming distance as metric.
 
 \subsection{Key Concepts}
 \label{sec:lsh}
@@ -122,7 +123,7 @@ This LSH now considers all vectors that are identical on the $l'$ sampled bit po
 \section{Related work}
 
 \subsection{Distance-Sensitive Bloom Filters}
-Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. The aim is to expand upon classical Bloom filters, enabling them to solve the Similarity Search problem. They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
+Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. The aim is to expand upon classical Bloom filters, enabling them to solve the similarity search problem. They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
 
 Like Bloom filters, the DSBF structure supports two operations:
 \texttt{Insert} which adds an element to the set, and \texttt{Query} which queries the DSBF for the existence of similar elements.
@@ -185,7 +186,7 @@ We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They 
 \section{Naïve Solutions for Similarity Search} \label{naive_approaches}
 
 \subsection{Linear Scan}
-The most obvious idea for solving the Similarity Search problem, is to apply brute force.
+The most obvious idea for solving the similarity search problem, is to apply brute force.
 Let $n$ be the number of elements in $S$, $n = |S|$.
 The idea is to store the elements $S$ in a linked list. When a query is made, scan the linked list, and calculate the distance from each element $s \in S$ to the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
 This yields a time and space complexity of \BigO{n}.\\
@@ -249,7 +250,7 @@ This means that $\epsilon$ has to be kept below $\frac{1}{l'}$ if $t$ should sta
 \section{Wildcard Search}
 The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". A natural extension to this, is be able to ignore certain bits in $q$, when calculating the similarity.
 
-If we examine the job applicants example from the introduction, an application of Similarity Search with wildcards can be formulated as follows: Given a person with attributes \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\} does the dataset contain one or more similar applicants, disregarding the attributes \texttt{gender} and \texttt{age}.\\
+If we examine the job applicants example from the introduction, an application of similarity search with wildcards can be formulated as follows: Given a person with features \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\} does the dataset contain one or more similar applicants, disregarding the features \texttt{gender} and \texttt{age}.\\
 
 The extended problem can be formally stated as: Let $W$ be a set of wildcard bit positions:
 \[\forall w \in W (w \in \mathbb{Z}^+ \land w < l)\]
