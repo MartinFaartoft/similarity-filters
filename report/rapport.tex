@@ -79,16 +79,13 @@
 \thispagestyle{empty}
 \setcounter{page}{1}
 \begin{abstract}
-We consider the Similarity Search problem, in which we, given some universe of elements $S$ and a query element $q$, would like some data structure to answer 'close' if some element in $S$ matched $q$ on at least an $\epsilon$-fration of the attributes of $q$.
+In this paper, we investigate the similarity search problem. We consider existing work in this field, and suggest a number of specific improvements.
 
-This problem can be solved using Distance-Sensitive Bloom Filters as described by Kirsch and Mitzenmacher\cite{paper:harvard}.
+We consider a method to improve robustness by modifying bit sampling for Locality Sensitive Hashing.
 
-We contribute three extensions to the DSBF data structure. We improve the robustness by modifying the Locality Sensitive Hashing functions, so they sample bits in a systematic and balanced way.
+Furthermore, we show a way to provide a guarantee against false negatives, if parameters are chosen carefully. We show that this is a tradeoff resulting in an increased probability of false positives, and conclude that this is only useful for elements with very high similarity.
 
-We provide a guarantee against false negatives, if bit sampling is balanced and the threshold $t$ is chosen correctly. We show that this is a tradeoff resulting in an increased probability of false positives, and is conclude that this is only useful for very small values of $\epsilon$.
-
-
-Finally we extend the DSBF structure to also support queries with wildcards. We show that this can be done with no additional space, and a slight increase the false positive rate. Wildcard search makes the running time of a query exponential in the number of wildcards, but we show that if the number of wildcarded bits is chosen correctly, the expected running time becomes constant.
+Finally we consider an extension to the problem - supporting queries with wildcards (ignoring certain features when comparing). We show by experiment, that this can be solved using no additional space. The running time and false positive rate of a wildcard query increases exponentially with the number of wildcards.
 \end{abstract}
 
 %\newpage
