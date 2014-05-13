@@ -242,7 +242,9 @@ Providing a guarantee against false negatives can be achieved by lowering the DS
 
 Lowering $t$ comes at a price. The lower the value of $t$, the higher the probability of a false positive. In the edge case, where $t=0$, the DSBF becomes useless, answering 'close' to every query. Taking this into account, we have to constrain the value of $n_{false}$ such that $t>0$.
 \[t > 0 \Leftrightarrow k > n_{false} \Leftrightarrow k > \epsilon_{abs} \cdot n_{sample}\]
-Since $k$ is usually chosen around $20$, and $n_{sample}$ is small and grows proportionally to $k$, $e_{abs}$ will have to be very small (below 10) for $t$ to remain positive. This limitation seriously hinders the real-world applications of the guarantee against false negatives.
+\[k > \epsilon_{abs} \cdot n_{sample} \Leftrightarrow k > \ceil{\epsilon \cdot l} \cdot \ceil[\bigg]{\frac{k \cdot l{'}}{l}}\]
+\[\Leftrightarrow k > \epsilon \cdot l \cdot \frac{k \cdot l{'}}{l} \Leftrightarrow \epsilon < \frac{1}{l'}\]
+This means that $\epsilon$ has to be kept below $\frac{1}{l'}$ if $t$ should stay positive, and increasing $k$, surprisingly, does nothing change this. This way of eliminating false negatives may be useful in practice, if $\epsilon$ is extremely small, but the usefulness drops of rapidly with increasing $\epsilon$, as the false positive rate increases towards 1.
 
 \section{Wildcard Search}
 The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". A natural extension to this, is be able to ignore certain bits in $q$, when calculating the similarity.
