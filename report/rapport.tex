@@ -139,6 +139,15 @@ The \texttt{Query} operation should return:
 They accomplish this by using $k$ locality sensitive hashing functions, independently chosen such that two elements that are sufficiently similar, will hash to the same value with a high probability.
 When querying the Bloom filter for an approximate match, the element is hashed with each of the LSH functions, and the corresponding indiceses are checked. If there are more bits, than a specified threshold ($t$), that is set to 1, it returns that the data contains an element that is close to the query element. In contrast to standard Bloom filters, the usage of LSH introduces the possibility of false negatives, due to accidental LSH collisions, but the use of a threshold keeps the false negative probability fairly low.
 
+\begin{figure}[H]
+\centering
+  \includegraphics[width=.95\linewidth]{sbf_vs_dsbf}
+\caption{Comparing Bloom filter and DSBF when querying}
+\label{fig:sbf-vs-dsbf}
+\end{figure}
+
+Figure \ref{fig:sbf-vs-dsbf} shows the differences between querying a standard Bloom filter, and a DSBF.\\
+
 In their experiments they manage to achieve false postive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, with $\epsilon = 0.1$ and $\delta = 0.4$. For 10000 elements they achieve 0.016\% false positive rate and 0.003\% false negative rate, with with $\epsilon = 0.05$ and $\delta = 0.4$. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space.
 
 \subsection{Locality-Sensitive Bloom Filter for Approximate Membership Query}
