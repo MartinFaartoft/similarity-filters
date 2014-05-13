@@ -231,9 +231,9 @@ False Negatives \label{p:fn}happen when a query element is within distance $\eps
 
 Providing a guarantee against false negatives can be achieved by lowering the DSBF threshold appropriately. Armed with the knowledge of $n_{false}$ from \ref{p:fn}, we can set $t = k - n_{false}$, and thereby eliminate the possibility of false negatives completely.
 
-Lowering $t$ comes at a price, the lower the value of $t$, the higher the probability of a false positive. In the edge case, where $t=0$, the DSBF becomes useless, answering 'close' to every query. Taking this into account, we have to constrain the value of $n_{false}$ such that $t>0$.
+Lowering $t$ comes at a price. The lower the value of $t$, the higher the probability of a false positive. In the edge case, where $t=0$, the DSBF becomes useless, answering 'close' to every query. Taking this into account, we have to constrain the value of $n_{false}$ such that $t>0$.
 \[t > 0 \Leftrightarrow k > n_{false} \Leftrightarrow k > \epsilon_{abs} \cdot n_{sample}\]
-Since $k$ is usually chosen around $20$, and $n_{sample}$ small and grows proportionally to $k$, $e_{abs}$ will have to be very small (below 10) for $t$ to remain positive. This limitation seriously hinders the real-world applications of the guarantee against false negatives.
+Since $k$ is usually chosen around $20$, and $n_{sample}$ is small and grows proportionally to $k$, $e_{abs}$ will have to be very small (below 10) for $t$ to remain positive. This limitation seriously hinders the real-world applications of the guarantee against false negatives.
 
 \section{Wildcard Search}
 The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". A natural extension to this, is be able to ignore certain bits in $q$, when calculating the similarity.
@@ -408,7 +408,7 @@ Flavio Bonomi, Michael Mitzenmacher, Rina Panigrahy, Sushil Singh, and George Va
   \centering
   \includegraphics[width=.95\linewidth]{wildcard_1000_TNR1}
 \end{subfigure}
-\caption{The observed true positive and true negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0., and $\sigma$ = 0.4, with 2 different lengths of $W$}
+\caption{The observed true positive and true negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0.1, and $\delta$ = 0.4, with 2 different lengths of $W$}
 \label{fig:w-tpnr}
 \end{figure}
 
