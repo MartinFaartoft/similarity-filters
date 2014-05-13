@@ -176,7 +176,7 @@ We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They 
 \section{Naïve Solutions for Similarity Search} \label{naive_approaches}
 
 \subsection{Linear Scan}
-The most obvious idea for solving the Similarity Search problem, is to apply brute force. 
+The most obvious idea for solving the Similarity Search problem, is to apply brute force.
 Let $n$ be the number of elements in $S$, $n = |S|$.
 The idea is to store the elements $S$ in a linked list. When a query is made, scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
 This yields a time and space complexity of \BigO{n}.\\
@@ -194,7 +194,7 @@ The exponential time / space complexities makes this unusable for non-trivial pr
 
 \section{Balanced LSH Bit Sampling} \label{sec:balanced}
 
-The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the $k$ hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false positives and -negatives.
+The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the $k$ hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. We believe that this will degrade the performance of the DSBF, resulting in more false positives and -negatives.
 
 Inspired by ideas from our supervisor we investigate how this may be improved upon.
 
@@ -246,16 +246,18 @@ Given a set of elements $S$, a query element $q$ and a set of wildcards $W$. Det
 
 \subsection{Solving Wildcard Search}
 We have identified two approaches to solving the extended problem.
-\paragraph{The first approach} is to simply ignore the output from all LSH's that sample one or more wildcard bits. This can be done without modifying the insertion of elements into the DSBF, and without storing additional data. However, it raises some troublesome questions.
+\subsubsection*{LSH filtering}
+ The first approach is to ignore the output from all LSH's that sample one or more wildcard bits. This can be done without modifying the insertion of elements into the DSBF, and without storing additional data. However, it raises some troublesome questions.
 
 \begin{itemize}
 \item How should the threshold be chosen, when the number of ignored LSH's changes from query to query?
 \item How should the bits to sample for each LSH be chosen, to minimize the probability that the LSH's that are ignored due to wildcarding, are not the only ones sampling some bit position $p \notin W$?, accidentally ignoring $p$ when counting differences.
 \end{itemize}
 
-The second question intuitively seems like it will require $|W|$ to be small, in order to keep the false positive rate low. And overall, the approach seems inferior to the second approach.
+The second question intuitively seems like it will require $|W|$ to be small, in order to keep the false positive rate low. And overall, this approach seems inferior to the following approach.
 
-\paragraph{The second approach} is to use the idea from the naïve solution, outlined in \ref{naive_approaches} and query the DSBF structure multiple times with different variations of $q$. As a simple example, assume that we are querying a previously constructed DSBF with the following:
+\subsubsection*{Multiple Queries}
+The second approach is to use the idea from the naïve solution, outlined in Section \ref{naive_approaches} and query the DSBF structure multiple times with different variations of $q$. As a simple example, assume that we are querying a previously constructed DSBF with the following:
 \[q=[0,0,0,0], W=\{2,3\}\]
 Since the last two bits are wildcarded, we generate all possible variations of $q$ on the wildcarded positions:
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
@@ -372,7 +374,7 @@ In this paper, we have introduced the Balanced LSH Bit Sampling method which aim
 
 We have introduced a method to eliminate false negatives, at the cost of an increased probability of false positives. We have have argued that this is only useful for very small values of $\epsilon$, which makes it impractical for real-world applications.\\
 
-Finally we have introduced an extension to the DSBF that allows for queries with wildcards. Wildcard queries expands the real-world applications of the Distance-Sensitive Bloom Filter, without increasing the space usage or true positive rate. This comes at the cost of a slightly increased false positive rate and a query time complexity that is exponential in the number of wildcards. We show a way of choosing the number of wildcards, such that a wildcard query runs in expected constant time.\\
+Finally we have introduced an extension to the DSBF that allows for queries with wildcards. Wildcard queries expands the real-world applications of the Distance-Sensitive Bloom Filter, without increasing the space usage or true positive rate. This comes at the cost of a query time complexity, and false positive rate, that is exponential in the number of wildcards. We show that if the number of wildcards is sufficiently small, a wildcard query will run in expected constant time.\\
 
 All source code is freely available at: \\\url{https://github.com/MartinFaartoft/similarity-filters}
 
