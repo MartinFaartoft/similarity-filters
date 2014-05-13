@@ -83,7 +83,7 @@ We consider the Similarity Search problem, in which we, given some universe of e
 
 This problem can be solved using Distance-Sensitive Bloom Filters as described by Kirsch and Mitzenmacher\cite{paper:harvard}.
 
-We contribute three extensions to the DSBF. We improve the robustness by modifying the Locality Sensitive Hashing functions, so they sample bits in a systematic and balanced way.
+We contribute three extensions to the DSBF data structure. We improve the robustness by modifying the Locality Sensitive Hashing functions, so they sample bits in a systematic and balanced way.
 
 We provide a guarantee against false negatives, if bit sampling is balanced and the threshold $t$ is chosen correctly. We show that this is a tradeoff resulting in an increased probability of false positives, and is conclude that this is only useful for very small values of $\epsilon$.
 
