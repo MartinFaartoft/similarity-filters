@@ -194,7 +194,7 @@ The exponential time / space complexities makes this unusable for non-trivial pr
 
 \section{Balanced LSH Bit Sampling} \label{sec:balanced}
 
-The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the $k$ hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. This skew will degrade the performance of the DSBF, resulting in more false positives and -negatives.
+The default way to initialize the LSH functions used in the Distance-Sensitive Bloom filter (DSBF), is for each of the $k$ LSH functions, to choose $l'$ bit positions to sample, uniformly at random. On average this should spread the sampled bits out nicely across the $k$ hash-functions, but in some cases this will result in a skewed distribution, meaning that some bits are oversampled, while others may not be sampled at all. We believe that this will degrade the performance of the DSBF, resulting in more false positives and -negatives.
 
 Inspired by ideas from our supervisor we investigate how this may be improved upon.
 
