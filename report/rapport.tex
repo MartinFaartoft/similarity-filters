@@ -79,13 +79,13 @@
 \thispagestyle{empty}
 \setcounter{page}{1}
 \begin{abstract}
-In this paper, we investigate the similarity search problem. We consider existing work in this field, and suggest a number of specific improvements.
+In this paper we investigate the similarity search problem. We consider existing work in this field, and suggest a number of specific improvements.
 
 We consider a method to improve robustness by modifying bit sampling for Locality Sensitive Hashing.
 
-Furthermore, we show a way to provide a guarantee against false negatives, if parameters are chosen carefully. We show that this is a tradeoff resulting in an increased probability of false positives, and conclude that this is only useful for elements with very high similarity.
+Furthermore, we show a way to provide a guarantee against false negatives, if parameters are chosen carefully. We show that this is a tradeoff resulting in an increased false positive rate, and conclude that this will only work for very similar elements.
 
-Finally we consider an extension to the problem - supporting queries with wildcards (ignoring certain features when comparing). We show by experiment, that this can be solved using no additional space. The running time and false positive rate of a wildcard query increases exponentially with the number of wildcards.
+Finally we consider an extension to the problem - supporting queries with wildcards (ignoring certain features when comparing). We show by experiment, that this can be solved using no additional space, and that the running time and false positive rate of a wildcard query increases exponentially with the number of wildcards.
 \end{abstract}
 
 %\newpage
