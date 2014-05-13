@@ -100,7 +100,7 @@ In the following we investigate the Similarity Search problem. Different approac
 \subsection{Problem Definition}
 The Similarity Search problem can be stated as follows: Given a set of elements $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$ using a certain metric.
 
-A real-word example could be a database of candidates used by a headhunting agency. Each candidate in the database would then have a set of attributes, for example \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, and \texttt{experience}\}.
+A real-word example could be a database of candidates used by a headhunting agency. Each candidate in the database would then have a set of attributes, for example \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\}.
 An application of Similarity Search can then be formulated as: "Given some person P, does the database contain one or more candidates, similar to P?".
 % Begræns problemet
 In the following we consider the Similarity Search problem for bit-vectors of length $l$, and Hamming distance as metric. This reduction maintains a high degree of generality, since elements from any domain can be encoded as bit-vectors.
