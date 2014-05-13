@@ -152,8 +152,11 @@ The paper written by Hua et al.\cite{paper:hua} introduces the 'Locality Sensiti
 
 \paragraph{Minimizing False Positives}
 Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things.
-1) An element $p$ exists in the LSBF, that is approximately close to $q$ (a true positive)
-2) Multiple elements added to the LSBF, together, have set all the bit positions corresponding to $q$ to $1$, and no single element is approximately close to $q$. (a false positive).
+\begin{itemize}
+  \item An element $p$ exists in the LSBF, that is approximately close to $q$ (a true positive)
+  \item Multiple elements added to the LSBF, together, have set all the bit positions corresponding to $q$ to $1$, and no single element is approximately close to $q$. (a false positive).
+\end{itemize}
+
 
 To minimize the probability of a false positive, a Verification Scheme (VS) data structure is added.
 This is a standard Bloom filter (ordinary hashing, not LSH), and is maintained as follows: Every time an element is added to the LSBF, the bit positions that corresponds to that element, are encoded (see figure \ref{fig:verification_scheme}) and inserted into the VS Bloom filter.
@@ -332,7 +335,7 @@ From the above we see that if $b = 1$, the expected runtime per query is only a 
 
 \subsection{Experiments}
 %precision
-In Figure \ref{fig:w-fpnr} we show the the effects of wildcards, on accuracy. The solid black line represents our implementation of DSBF with no wildcards. The dashed red line represents our extension with 1000 wildcard charachters per element. As expected, we observe that the false negative rates are similar, but the false positive rate grows when increasing the number of wildcards.  Note that all the plots have a spike around space usage $= 0.6$. This is due to the way the threshold is set, which is based on $k$, and rounded\footnote{See \cite{paper:harvard} for exact details on how to choose parameters}. At this point the treshold increases, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}.\footnote{Graphs for true positives and true negatives can be found in Appendix \ref{appendix:experiments}}
+In Figure \ref{fig:w-fpnr} we show the the effects of wildcards, on accuracy. The solid black line represents our implementation of DSBF with no wildcards. The dashed red line represents our extension with 1000 wildcard characters per element. As expected, we observe that the false negative rates are similar, but the false positive rate grows when increasing the number of wildcards.  Note that all the plots have a spike around space usage $= 0.6$. This is due to the way the threshold is set, which is based on $k$, and rounded\footnote{See \cite{paper:harvard} for exact details on how to choose parameters}. At this point the treshold increases, thus increasing our negatives and decreasing our positives. This behaviour is inherited by the approach from \cite{paper:harvard}.\footnote{Graphs for true positives and true negatives can be found in Appendix \ref{appendix:experiments}}
 
 \begin{figure}[H]
 \centering
