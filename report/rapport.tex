@@ -95,7 +95,7 @@ Finally we consider an extension to the problem - supporting queries with wildca
 In the following we investigate the Similarity Search problem. Different approaches have been explored by earlier work, and in this paper we consider two of those; 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} by Kirsch and Mitzenmacher, and 'Locality-Sensitive Bloom Filter for Approximate Membership Query'\cite{paper:hua} by Hua et al.
 
 \subsection{Problem Definition}
-The Similarity Search problem can be stated as follows: Given a set of elements $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$ using a certain metric.
+The Similarity Search problem can be stated as follows: Given a set of elements, $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$, using a certain metric.
 
 A real-word example could be a database of candidates used by a headhunting agency. Each candidate in the database would then have a set of attributes, for example \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\}.
 An application of Similarity Search can then be formulated as: "Given some person P, does the database contain one or more candidates, similar to P?".
@@ -116,7 +116,7 @@ A compact, but inexact set representation. It answers membership queries in cons
 Ordinary hashing tries to minimize the probability of a collision, while Locality-Sensitive Hashing (LSH) attempts to maximize the collision probability for sufficiently similar elements.
 
 LSH functions are not known for all similarity-measures, but for the Hamming metric on bit-vectors, a particularly simple one is known: Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniformly at random.
-This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is highly desired (called locality collision in the following). Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to hash the bit vector to an integer, and use that value as an index in some array of size $m$. When $m < 2^{l'}$, we have from the pigeonhole principle, that multiple bit vectors must hash to the same value, similar to ordinary hashing collisions. This type of collision is not desirable, and leads to an increase in false positives. We call this an accidental collision in the following.
+This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is highly desired. Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to hash the bit vector to an integer, and use that value as an index in some array of size $m$. When $m < 2^{l'}$, we have from the pigeonhole principle, that multiple bit vectors must hash to the same value, similar to ordinary hashing collisions. This type of collision is not desirable, and leads to an increase in false positives. We call this an accidental collision in the following.
 \end{description}
 
 \section{Related work}
@@ -184,7 +184,7 @@ We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They 
 \subsection{Linear Scan}
 The most obvious idea for solving the Similarity Search problem, is to apply brute force.
 Let $n$ be the number of elements in $S$, $n = |S|$.
-The idea is to store the elements $S$ in a linked list. When a query is made, scan the linked list, and calculate the distance from each element $s \in S$ the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
+The idea is to store the elements $S$ in a linked list. When a query is made, scan the linked list, and calculate the distance from each element $s \in S$ to the query element $q$. If $s$ satisfies the distance requirement, a match has been found. If the end of the linked list is reached, no match exists.
 This yields a time and space complexity of \BigO{n}.\\
 
 This will give a correct answer, and will work well for small problem instances, But the linear requirement on time and space is prohibitively expensive for many real-world applications.
@@ -380,7 +380,7 @@ Figure \ref{fig:w-perf}b shows the performance gained by short-circuiting sub-qu
 %In this paper we have implemented the Distance Sensitive Bloom Filter\cite{paper:harvard} as presented by Kirsch \& Mitzenmacher. We have been able to roughly reproduce their results, regarding accuracy.
 In this paper, we have introduced the Balanced LSH Bit Sampling method which aims to avoid skewed bit sampling. We have shown this to be a clear improvement for small problem instances, but expect the usefulness to decrease with growing problem sizes.\\
 
-We have introduced a method to eliminate false negatives, at the cost of an increased probability of false positives. We have have argued that this is only useful for very small values of $\epsilon$, which makes it impractical for real-world applications.\\
+We have introduced a method to eliminate false negatives, at the cost of an increased probability of false positives. We have argued that this is only useful for very small values of $\epsilon$, which makes it impractical for real-world applications.\\
 
 Finally we have introduced an extension to the DSBF that allows for queries with wildcards. Wildcard queries expands the real-world applications of the Distance-Sensitive Bloom Filter, without increasing the space usage or true positive rate. This comes at the cost of a query time complexity, and false positive rate, that is exponential in the number of wildcards. We show that if the number of wildcards is sufficiently small, a wildcard query will run in expected constant time.\\
 
