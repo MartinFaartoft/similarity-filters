@@ -88,12 +88,7 @@ Furthermore, we show a way to provide a guarantee against false negatives, if pa
 Finally we consider an extension to the problem - supporting queries with wildcards (ignoring certain features when comparing). We show by experiment, that this can be solved using no additional space, and that the running time and false positive rate of a wildcard query increases exponentially with the number of wildcards.
 \end{abstract}
 
-%\newpage
-%\setcounter{page}{1}
-
 \section{Introduction}
-Different approaches to the similarity search problem have been explored by earlier work, and in this paper we consider two of those; 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} by Kirsch and Mitzenmacher, and 'Locality-Sensitive Bloom Filter for Approximate Membership Query'\cite{paper:hua} by Hua et al.
-
 \subsection{Problem Definition}
 The similarity search problem can be stated as follows: Given a set of elements, $S$, determine if there exists an element $s \in S$ that is 'close' to a given query element $q$. Where 'close' is defined as being within a given distance, $d$, using a certain metric.
 
@@ -116,16 +111,18 @@ A compact and inexact set representation. A Bloom filter answers membership quer
 \item[Locality Sensitive Hashing]
 Ordinary hashing tries to minimize the probability of a collision, while Locality-Sensitive Hashing (LSH) attempts to maximize the collision probability for sufficiently similar elements.
 
-LSH functions are not known for all similarity-measures, but for the Hamming metric on bit-vectors, a particularly simple one is known: Sample a fixed number of bit positions, $l'$, from the input bit-vector, uniformly at random.
-This LSH now considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is highly desired.
+LSH functions are not known for all similarity-measures, but for the Hamming metric on bit-vectors, a particularly simple one is known: Sample a fixed number of bit positions, $l'$, uniformly at random.
+An LSH considers all vectors that are identical on the $l'$ sampled bit positions, identical. This type of collision is highly desired.
 
 Storing all of these requires $2^{l'}$ space, which is not feasible for large values of $l'$. The solution is to hash the bit vector to an integer, and use that value as an index in some array of size $m$. When $m < 2^{l'}$, we have from the pigeonhole principle, that multiple bit vectors must hash to the same value. This type of collision leads to false positives and is called \textit{accidental collision} in the following.
 \end{description}
 
 \section{Related work}
+Different approaches to the similarity search problem have been explored by earlier work. In the following we consider two of those; 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} by Kirsch and Mitzenmacher, and 'Locality-Sensitive Bloom Filter for Approximate Membership Query'\cite{paper:hua} by Hua et al.
+
 
 \subsection{Distance-Sensitive Bloom Filters}
-Kirsch and Mitzenmacher propose in the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard} a novel way of using Bloom filters. The aim is to expand upon classical Bloom filters, enabling them to solve the similarity search problem. They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
+In the paper 'Distance-Sensitive Bloom Filters'\cite{paper:harvard}, Kirsch and Mitzenmacher propose a novel way of using Bloom filters. They call this a 'Distance-Sensitive Bloom Filter' (DSBF). The aim is to expand upon classical Bloom filters, enabling them to solve the similarity search problem. They note that such a data structure has a number of practical uses, if it can be made sufficiently effective in both time and space.
 
 Like Bloom filters, the DSBF structure supports two operations:
 \texttt{Insert} which adds an element to the set, and \texttt{Query} which queries the DSBF for the existence of similar elements.
@@ -151,16 +148,16 @@ The DSBFs allows for both false positives and false negatives, which means it ma
 
 Figure \ref{fig:sbf-vs-dsbf} shows the differences between querying a standard Bloom filter, and a DSBF.\\
 
-In the experiments in \cite{paper:harvard} they achieve false positive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, with $\epsilon = 0.1$ and $\delta = 0.4$. For 10000 elements they achieve 0.016\% false positive rate and 0.003\% false negative rate, with $\epsilon = 0.05$ and $\delta = 0.4$. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space.
+In the experiments in \cite{paper:harvard}, Kirsch and Mitzenmacher achieve false positive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, with $\epsilon = 0.1$ and $\delta = 0.4$. For 10000 elements they achieve 0.016\% false positive rate and 0.003\% false negative rate, with $\epsilon = 0.05$ and $\delta = 0.4$. For 1000 elements they use 64\% of the memory required to store all the elements, and for 10000 elements they use 51\% of the memory required.
 
 \subsection{Locality-Sensitive Bloom Filter for Approximate Membership Query}
-The paper written by Hua et al.\cite{paper:hua} introduces the 'Locality Sensitive Bloom Filter'. They use a standard Bloom filter data structure, with LSH functions in place of ordinary hash functions, but choose to not use a threshold. The lack of threshold dramatically increases the probability of both false positives and false negatives. To minimize these, they introduce a pair of auxiliary data structures, as described in the following.
+The paper written by Hua et al.\cite{paper:hua} introduces the 'Locality Sensitive Bloom Filter' (LSBF). They use a standard Bloom filter data structure, with LSH functions in place of ordinary hash functions, but choose to not use a threshold. The lack of threshold dramatically increases the probability of both false positives and false negatives. To minimize these, they introduce a pair of auxiliary data structures, as described in the following.
 
 \paragraph{Minimizing False Positives}
-Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things:
+Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to 'true', that could mean one of two things:
 \begin{enumerate}
   \item An element $p$ exists in the LSBF, that is approximately close to $q$ (a true positive)
-  \item Multiple elements added to the LSBF, together, have set all the bit positions corresponding to $q$ to $1$, and no single element is approximately close to $q$. (a false positive).
+  \item Multiple elements added to the LSBF, together, have set all the bit positions corresponding to $q$ to 'true', and no single element is approximately close to $q$. (a false positive).
 \end{enumerate}
 
 
@@ -180,7 +177,7 @@ Note that since the Verification Scheme is a standard Bloom filter, it is suscep
 \paragraph{Minimizing False Negatives}
 Hua et al. use a method called Active Overflowed Scheme. The idea is that, while a pair of close elements may not be hashed to the same value, they may instead hash to values that are adjacent in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, they also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives\footnote{We remain sceptical towards the Active Overflowed Scheme. We see no reason for LSH values to exhibit 'neighbour' locality.}.\\
 
-We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and their results are only provided in graphical form, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme.
+We will not be discussing \cite{paper:hua} further, because they provide no clear description on how they construct their LSH's, and their results are only provided in graphical form, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme.
 
 In the following, we will build upon the work of \cite{paper:harvard}.  Their work achieves robustness by using thresholds and the way they present their results allows for easy comparison.\\
 
@@ -209,8 +206,8 @@ The default way to initialize the LSH functions used in the Distance-Sensitive B
 
 Inspired by ideas from our supervisor we investigate how this may be improved upon.
 
-By initializing the LSHs such that all bit positions are sampled equally often, we can avoid the problems arising from unbalanced bit sampling.
-In practice we do this by first preparing a vector of length $k \cdot l'$ by repeating the the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l'$, making sure that every index in the sub-vector is unique. This preprocessing step takes \BigO{l} time, and protects the DSBF from performance degradations caused by skewed sampling.
+By initializing the LSH's such that all bit positions are sampled equally often, we can avoid the problems arising from unbalanced bit sampling.
+In practice we do this by first preparing a vector of length $k \cdot l'$ by repeating the integers from 0 to $l$ as many times as required. We then shuffle the vector, and assign each of the $k$ functions a sub-vector of length $l'$, making sure that every index in the sub-vector is unique. This preprocessing step takes \BigO{l} time, and protects the DSBF from performance degradations caused by skewed sampling.
 
 \subsection{Experiments}
 Figure \ref{fig:bitbalance-fpnr} shows an experiment run with balanced bit sampling enabled (illustrated by the solid black line) and disabled (illustrated by the dashed red line), and shows that this, in some cases, improves the performance of the DSBF.
@@ -238,7 +235,7 @@ In practice, when $l$ gets sufficiently large, the probability that a DSBF witho
 \section{Eliminating False Negatives}
 Building on the idea from Section \ref{sec:balanced}, we present a method to eliminate false negatives from the DSBF data structure.
 
-False Negatives \label{p:fn}happen when a query element is within distance $\epsilon$ of an element in S, but is reported as being 'not close'. This happens when too many of the $k$ LSH functions report false, driving the number of trues below the threshold $t$. We know that each of the LSHs that report false, will sample at least one bit in which $q$ and every element $s \in S$ differ. Since q, by definition, is 'close' to some element $s \in S$, the maximum number of differences between $q$ and the closest element in $S$ is: $\epsilon_{abs} = \ceil{\epsilon \cdot l}$, where $l$ is the element length. Assuming that each is sampled an equal number of times (as described in Section \ref{sec:balanced})): $n_{sample} = \ceil[\big]{\frac{k \cdot l{'}}{l}}$, the maximum number of hash-functions that can report false is: $n_{false} = e_{abs} \cdot n_{sample}$.
+False negatives \label{p:fn}happen when a query element is within distance $\epsilon$ of an element in S, but is reported as being 'not close'. This happens when too many of the $k$ LSH functions report false, driving the number of trues below the threshold $t$. We know that each of the LSH's that report false, will sample at least one bit in which $q$ and every element $s \in S$ differ. Since q, by definition, is 'close' to some element $s \in S$, the maximum number of differences between $q$ and the closest element in $S$ is: $\epsilon_{abs} = \ceil{\epsilon \cdot l}$, where $l$ is the element length. Assuming that each bit position is sampled an equal number of times (as described in Section \ref{sec:balanced})): $n_{sample} = \ceil[\big]{\frac{k \cdot l{'}}{l}}$, the maximum number of hash-functions that can report false is: $n_{false} = e_{abs} \cdot n_{sample}$.
 
 Providing a guarantee against false negatives can be achieved by lowering the DSBF threshold appropriately. Given the knowledge of $n_{false}$, we can set $t = k - n_{false}$, and thereby eliminate the possibility of false negatives completely.
 
@@ -264,7 +261,7 @@ We have identified two approaches to solving the extended problem.
 
 \begin{itemize}
 \item How should the threshold be chosen, when the number of ignored LSH's changes from query to query?
-\item How should the bits to sample for each LSH be chosen, to minimize the probability that the ignored LSH's are not the only ones sampling some bit position $p \notin W$?, accidentally ignoring $p$.
+\item How should the bits to sample for each LSH be chosen? Is it possible to sample bits for the LSH's such that no non-wildcard features are ignored?
 \end{itemize}
 
 The second question intuitively seems like it will require $|W|$ to be small, in order to keep the false positive rate low. 
@@ -300,7 +297,7 @@ The threshold logic of the query is unchanged. If the number of LSH's that retur
 The above requires $2^{min(|W|, l')}$ queries in the worst case.
 This is an improvement in two ways: The worst-case time complexity is now upper bounded by $2^{l'}$, and more importantly the average time complexity is significantly improved, since the worst-case now only happens when an LSH samples all the bit positions in $W$.
 
-Due to the nature of randomization, this will only happen with a very low probability\footnote{the probability is given by the hypergeometric distribution}.
+Due to the nature of randomization, this will only happen with a very low probability.
 
 %advantages
 %no prior knowledge of W required
@@ -337,7 +334,7 @@ From the above we see that if $b = 1$, the expected runtime per query is only a 
 
 \subsection{Experiments}
 %precision
-In Figure \ref{fig:w-fpnr} we show the the effects of wildcards, on accuracy. The solid black line represents our implementation of DSBF with no wildcards. The dashed red line represents our extension with 1000 wildcard bits per element. As expected, we observe that the false negative rates are similar, but the false positive rate grows when increasing the number of wildcards.  Note that all the plots have a spike around space usage $= 0.6$. This is due to the way the threshold is set, which is based on $k$, and rounded\footnote{See \cite{paper:harvard} for exact details on how to choose parameters}. At this point the treshold increases, thus increasing our negatives and decreasing our positives. This behaviour is inherited from \cite{paper:harvard}.\footnote{Graphs for true positives and true negatives can be found in Appendix \ref{appendix:experiments}}
+In Figure \ref{fig:w-fpnr} we show the effects of wildcards on the false positive- and false negative rate. The solid black line represents our implementation of DSBF with 0 bits wildcarded. The dashed red line represents our extension with 1000 wildcard bits per element. As expected, we observe that the false negative rates are similar, but the false positive rate grows when increasing the number of wildcards.  Note that all the plots have a spike around space usage $= 0.6$. This is due to the way the threshold is set, which is based on $k$, and rounded\footnote{See \cite{paper:harvard} for exact details on how to choose parameters}. At this point the treshold increases, thus increasing our negatives and decreasing our positives. This behaviour is inherited from \cite{paper:harvard}.\footnote{Graphs for true positives and true negatives can be found in Appendix \ref{appendix:experiments}}
 
 \begin{figure}[H]
 \centering
@@ -349,7 +346,7 @@ In Figure \ref{fig:w-fpnr} we show the the effects of wildcards, on accuracy. Th
   \centering
   \includegraphics[width=.95\linewidth]{wildcard_1000_FNR1}
 \end{subfigure}
-\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0.1, and $\delta$ = 0.4, with 2 different lengths of $W$}
+\caption{The observed false positive and false negative rates for $n$ = 1000, $l$ = 65536, $\epsilon$ = 0.1, and $\delta$ = 0.4, with 2 different lengths of $W$. The X-axis shows the space used as a fraction of the total input size.}
 \label{fig:w-fpnr}
 \end{figure}
 
@@ -384,7 +381,7 @@ In this paper, we have introduced the Balanced LSH bit sampling method which aim
 
 We have introduced a method to eliminate false negatives, at the cost of an increased probability of false positives. We have argued that this is only useful for very small values of $\epsilon$, which makes it impractical for real-world applications.\\
 
-Finally we have introduced an extension to the DSBF that allows for queries with wildcards. Wildcard queries expands the real-world applications of the Distance-Sensitive Bloom Filter, without increasing the space usage or true positive rate. This comes at the cost of a query time complexity, and false positive rate, that is exponential in the number of wildcards. We show that if the number of wildcards is sufficiently small, a wildcard query will run in expected constant time.\\
+Finally we have introduced an extension to the DSBF that allows for queries with wildcards. Wildcard queries expands the real-world applications of the Distance-Sensitive Bloom Filter, without increasing the space usage, or lowering the true positive rate. This comes at the cost of a query time complexity, and false positive rate, that is exponential in the number of wildcards. We show that if the number of wildcards is sufficiently small, a wildcard query will run in expected constant time.\\
 
 All source code is available at: \\\url{https://github.com/MartinFaartoft/similarity-filters}
 
