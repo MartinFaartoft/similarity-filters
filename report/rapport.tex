@@ -138,7 +138,7 @@ The \texttt{Query} operation should return:
 
 They accomplish this by using $k$ different LSH functions chosen independently.
 When querying the Bloom filter for an approximate match, the element is hashed with each of the $k$ LSH functions, and the corresponding indices are checked.
-If there are more bits, than a specified threshold ($t$), that is set to 1, it returns 'close'.
+If the number of LSH functions that returns 'true' exceeds the specified threshold $t$, the data structure returns 'close'.
 
 The DSBFs allows for both false positives and false negatives, which means it may answer either "maybe in the set" or "maybe not in the set".
 
@@ -151,10 +151,10 @@ The DSBFs allows for both false positives and false negatives, which means it ma
 
 Figure \ref{fig:sbf-vs-dsbf} shows the differences between querying a standard Bloom filter, and a DSBF.\\
 
-In the experiments in \cite{paper:harvard} they achieve false postive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, with $\epsilon = 0.1$ and $\delta = 0.4$. For 10000 elements they achieve 0.016\% false positive rate and 0.003\% false negative rate, with $\epsilon = 0.05$ and $\delta = 0.4$. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space.
+In the experiments in \cite{paper:harvard} they achieve false positive rates and false negative rates of 1.5\% and 0.2\% respectively for 1000 elements, with $\epsilon = 0.1$ and $\delta = 0.4$. For 10000 elements they achieve 0.016\% false positive rate and 0.003\% false negative rate, with $\epsilon = 0.05$ and $\delta = 0.4$. For 1000 elements they use 64\% of the total space of the elements, and for 10000 elements they use 51\% of the total space.
 
 \subsection{Locality-Sensitive Bloom Filter for Approximate Membership Query}
-The paper written by Hua et al.\cite{paper:hua} introduces the 'Locality Sensitive Bloom Filter'. They use a standard Bloom filter data structure, with LSH functions in place of ordinary hash functions, but choose to not apply thresholding. The lack of threshold dramatically increases the probability of both false positives and false negatives. To minimize these, they introduce a pair of auxiliary data structures, as described in the following.
+The paper written by Hua et al.\cite{paper:hua} introduces the 'Locality Sensitive Bloom Filter'. They use a standard Bloom filter data structure, with LSH functions in place of ordinary hash functions, but choose to not use a threshold. The lack of threshold dramatically increases the probability of both false positives and false negatives. To minimize these, they introduce a pair of auxiliary data structures, as described in the following.
 
 \paragraph{Minimizing False Positives}
 Every time an element $q$ is checked for approximate membership, the LSBF is checked. If every bit in the array that $q$ hashes to is set to $1$, that could mean one of two things:
@@ -180,12 +180,9 @@ Note that since the Verification Scheme is a standard Bloom filter, it is suscep
 \paragraph{Minimizing False Negatives}
 Hua et al. use a method called Active Overflowed Scheme. The idea is that, while a pair of close elements may not be hashed to the same value, they may instead hash to values that are adjacent in the bit array. So when querying, instead of just looking at the bits which represents the hashed element, they also check the $t$ closest bits to either side. $t$ will depend on the price of false positives compared to false negatives as this approach will introduce more false positives\footnote{We remain sceptical towards the Active Overflowed Scheme. We see no reason for LSH values to exhibit 'neighbour' locality.}.\\
 
-In their paper, Hua et al. have chosen to use a 'proximity measure', which makes it difficult to compare the results to the ones found in \cite{paper:harvard}. Furthermore, all results are only presented in graph form. From the graphs, however, we can see that they achieve between 85\% and 100\% accuracy.\\
-
+We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and their results are only provided in graphical form, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme.
 
 In the following, we will build upon the work of \cite{paper:harvard}.  Their work achieves robustness by using thresholds and the way they present their results allows for easy comparison.\\
-
-We will not be discussing the paper of Hua et al.\cite{paper:hua} further. They provide no clear description on how they construct their LSH's, and they provide only plotted data, making comparisons difficult. Furthermore, it is unclear to us how they are able to implement the Active Overflowed Scheme.
 
 \section{Naïve Solutions to Similarity Search} \label{naive_approaches}
 
@@ -249,10 +246,10 @@ Lowering $t$ comes at a price. The lower the value of $t$, the higher the probab
 \[t > 0 \Leftrightarrow k > n_{false} \Leftrightarrow k > \epsilon_{abs} \cdot n_{sample}\]
 \[k > \epsilon_{abs} \cdot n_{sample} \Leftrightarrow k > \ceil{\epsilon \cdot l} \cdot \ceil[\bigg]{\frac{k \cdot l{'}}{l}}\]
 \[\Rightarrow k > \epsilon \cdot l \cdot \frac{k \cdot l{'}}{l} \Leftrightarrow \epsilon < \frac{1}{l'}\]
-This shows that $\epsilon$ has to be kept below $\frac{1}{l'}$ if $t$ should stay positive, and increasing $k$, surprisingly, does nothing change this. This way of eliminating false negatives may be useful in practice, if $\epsilon$ is extremely small, but the usefulness drops of rapidly with increasing $\epsilon$, as the false positive rate goes towards 1.
+This shows that $\epsilon$ has to be kept below $\frac{1}{l'}$ if $t$ should stay positive, and increasing $k$, surprisingly, does nothing to change this. This way of eliminating false negatives may be useful in practice, if $\epsilon$ is extremely small, but the usefulness drops off rapidly with increasing $\epsilon$, as the false positive rate goes towards 1.
 
 \section{Wildcard Search}
-The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". A natural extension to this, is be able to ignore certain bits in $q$, when calculating the similarity.
+The DSBF structure can, as we have seen, be used to answer questions of the form "does $S$ contain an element that is 'close' to $q$". A natural extension to this, is to be able to ignore certain bits in $q$, when calculating the similarity.
 
 If we examine the job applicants example from the introduction, an application of similarity search with wildcards can be formulated as follows: Given a person with features \{\texttt{age}, \texttt{gender}, \texttt{race}, \texttt{education}, \texttt{experience}\} does the dataset contain one or more similar applicants, disregarding the features \texttt{gender} and \texttt{age}.\\
 
@@ -267,7 +264,7 @@ We have identified two approaches to solving the extended problem.
 
 \begin{itemize}
 \item How should the threshold be chosen, when the number of ignored LSH's changes from query to query?
-\item How should the bits to sample for each LSH be chosen, to minimize the probability that the LSH's that are ignored due to wildcarding, are not the only ones sampling some bit position $p \notin W$?, accidentally ignoring $p$ when counting differences.
+\item How should the bits to sample for each LSH be chosen, to minimize the probability that the ignored LSH's are not the only ones sampling some bit position $p \notin W$?, accidentally ignoring $p$.
 \end{itemize}
 
 The second question intuitively seems like it will require $|W|$ to be small, in order to keep the false positive rate low. 
@@ -279,7 +276,7 @@ Since the last two bits are wildcarded, we generate all possible variations of $
 \[q_1=[0,0,0,0], q_2=[0,0,0,1], q_3=[0,0,1,0], q_4=[0,0,1,1]\]
 We now query the DSBF with each of the variations, and if any of them returns 'close', we report 'close' to the original query $(q, W)$.
 
-This requires $2^{|W|}$ queries in the worst case, and half of that in the average case, assuming the answer is 'close' and we 'short-circuit' (stop querying) after receiving the first 'close' response. The time complexity for a query with wildcards is: \BigO{2^|W|}\\
+This requires $2^{|W|}$ queries in the worst case, and half of that in the average case, assuming the answer is 'close' and we 'short-circuit' (stop querying) after receiving the first 'close' response. The time complexity for a query with wildcards is: \BigO{2^{|W|}}\\
 
 This result is reasonably good for small numbers of wildcards, but we can do better if we leverage the inner workings of the DSBF, instead of treating it as a black box.\\
 \subsubsection*{Improved Multiple Queries}
@@ -297,7 +294,7 @@ $LSH_2$ calculates $B_{LSH_2} \cap W = \{2\}$. It generates all possible variati
 looks up the corresponding positions, and returns the binary 'OR' between the values.
 $LSH_3$ does the same thing, but since it samples both bits 2 and 3, it has to generate 4 variations of $q$ and 'OR' the results.
 
-The thresholding logic of the query is unchanged. If the number of LSH's that returns 'true' exceeds the threshold, $t$, the DSBF reports 'close'.\\
+The threshold logic of the query is unchanged. If the number of LSH's that returns 'true' exceeds the threshold, $t$, the DSBF reports 'close'.\\
 
 \label{lbl:worst_case}
 The above requires $2^{min(|W|, l')}$ queries in the worst case.
@@ -323,7 +320,7 @@ The Improved Multiple Queries approach has the following desirable properties:
 %increased query time-complexity
 %increased FP due to non-LSH collisions
 
-And the following undesirable properties:
+\noindent And the following undesirable properties:
 \paragraph{Increased Time Complexity for Wildcard Search} Multiple queries for each LSH means that the query time complexity is no longer constant.
 
 \paragraph{Increased False Positive Rate} When querying each LSH multiple times, the false positive probability increases. The probability of an accidental collision\footnote{See Section \ref{sec:lsh}} is constant, so querying multiple times will linearly increase the probability of a false positive by the number of queries performed.
